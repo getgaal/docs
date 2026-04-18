@@ -1,0 +1,115 @@
+---
+title: "Pinning versions"
+description: "Lock skills, repositories, and MCP servers to specific revisions."
+---
+
+Reproducibility is one of the main reasons to use gaal in the first place. Pinning every external source to a specific revision turns "it worked on my machine" into "it worked on every machine."
+
+## Pinning repositories
+
+The `version:` field accepts the right pin format for each VCS type:
+
+```yaml
+repositories:
+  src/branch-pin:
+    type: git
+    url: https://github.com/example/proj.git
+    version: main             # branch, moves with the remote
+
+  src/tag-pin:
+    type: git
+    url: https://github.com/example/proj.git
+    version: v2.1.0           # tag, immutable
+
+  src/commit-pin:
+    type: git
+    url: https://github.com/example/proj.git
+    version: a1b2c3d4e5f6789  # commit, immutable, fully reproducible
+
+  src/svn-pin:
+    type: svn
+    url: https://svn.example.com/repos/proj/trunk
+    version: "1234"           # SVN revision
+
+  src/tar-pin:
+    type: tar
+    url: https://example.com/proj-2024.tar.gz
+    version: proj-2024        # strip-prefix; effectively pins to the URL
+```
+
+For maximum reproducibility, prefer tags or commits over branch names.
+
+## Pinning skill sources
+
+Skill sources don't have a `version:` field, they always track the source's default branch. Two ways to pin:
+
+### 1. Mirror the source as a repository, then point at it locally
+
+```yaml
+repositories:
+  vendor/anthropics-skills:
+    type: git
+    url: https://github.com/anthropics/skills.git
+    version: v1.4.0           # tag pin
+
+skills:
+  - source: ./vendor/anthropics-skills
+    agents: ["*"]
+    select: [frontend-design, skill-creator]
+```
+
+The skills now come from a pinned local directory, and the repository pin governs the version.
+
+### 2. Use a tag-pinned tarball
+
+```yaml
+repositories:
+  vendor/skills-v140:
+    type: tar
+    url: https://github.com/anthropics/skills/archive/refs/tags/v1.4.0.tar.gz
+    version: skills-1.4.0
+
+skills:
+  - source: ./vendor/skills-v140
+    agents: ["*"]
+```
+
+## Pinning MCP servers
+
+MCP entries written `inline:` are pinned by definition, the command and arguments you wrote are exactly what runs:
+
+```yaml
+mcps:
+  - name: filesystem
+    target: ~/.config/claude/claude_desktop_config.json
+    inline:
+      command: npx
+      args: ["-y", "@modelcontextprotocol/server-filesystem@1.4.0", "~/projects"]
+```
+
+For `npx`-launched servers, pin the package version in the args (`@1.4.0`). For `uvx`, use `uvx package==1.4.0`. For binaries, point at a specific path.
+
+When using `source:` to pull a remote MCP config, host the JSON yourself or pin to a tagged URL, never trust an HTTPS URL whose contents can change.
+
+## Reading current pins
+
+```bash
+$ gaal status
+repositories
+  src/gaal               git · main · clean
+  src/anthropics-skills  git · v1.4.0 · clean
+skills
+  frontend-design        from src/anthropics-skills
+mcps
+  filesystem             ~/.config/claude/claude_desktop_config.json
+```
+
+`gaal status` reports the actual revision present on disk.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure repositories" icon="folder-tree" href="/configure/repositories" />
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="gaal status" icon="terminal" href="/cli/status" />
+</CardGroup>

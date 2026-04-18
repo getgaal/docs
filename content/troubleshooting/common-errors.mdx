@@ -1,0 +1,130 @@
+---
+title: "Common errors"
+description: "What specific error messages mean and how to fix them."
+---
+
+If `gaal sync` or `gaal doctor` is reporting an error, find it on this page. Each entry covers what triggered it, what gaal is actually checking, and the fix.
+
+## "config not found"
+
+```text
+✗ no configuration found
+  searched:
+    --config flag (not provided)
+    ./gaal.yaml
+    ~/.config/gaal/config.yaml
+    /etc/gaal/config.yaml
+```
+
+gaal couldn't find any of the four config sources. Either:
+
+- **You meant to be in a project directory**, `cd` to it.
+- **You haven't initialised yet**, run `gaal init`.
+- **You're scripting gaal in a non-standard location**, pass `--config /path/to/file.yaml`.
+
+## "schema validation failed"
+
+```text
+✗ ./gaal.yaml: schema validation failed
+    skills[2].agents: expected array of strings, got string
+```
+
+The YAML parsed but the structure is wrong for the schema. The error message includes a JSON-pointer path (`skills[2].agents`), go to that location and compare against [the schema reference](/schema/overview).
+
+Tip: install the JSON Schema (`gaal schema -f schema.json`) and your editor will catch this before you save.
+
+## "scope-restricted field in workspace"
+
+```text
+! ./gaal.yaml: telemetry cannot be set in a workspace config (ignored)
+```
+
+The `telemetry` key is restricted to the user (`~/.config/gaal/config.yaml`) and system (`/etc/gaal/config.yaml`) scopes. The workspace value is ignored. Move it to the user scope.
+
+## "source not reachable"
+
+```text
+✗ skills[0].source: anthropics/skills (HTTP 404)
+```
+
+The `source:` URL doesn't resolve. Either:
+
+- The repo was renamed or deleted, update the URL.
+- It's a private repo and your local credentials don't grant access, check your SSH key / `~/.netrc`.
+- You're offline, pass `--offline` to `doctor` or wait until you're online.
+
+## "target file not writable"
+
+```text
+✗ mcps[1].target: ~/.config/claude/claude_desktop_config.json (permission denied)
+```
+
+gaal can't write to the MCP target file. Either:
+
+- The file's permissions are wrong, `chmod 644` it.
+- The parent directory doesn't exist and isn't user-writable, `mkdir -p` it manually.
+- The path crosses a read-only mount.
+
+## "target file is not valid JSON"
+
+```text
+✗ mcps[0].target: ~/.config/claude/claude_desktop_config.json
+    invalid JSON at line 12, col 3
+```
+
+Someone (you, an installer, an editor crash) wrote invalid JSON into the target file. gaal won't try to fix it because it can't safely tell what was intended. Open the file, fix the syntax, run sync again.
+
+## "custom agent overrides built-in"
+
+```text
+! ~/.config/gaal/agents.yaml: 'cursor' is a built-in agent (custom entry ignored)
+```
+
+You can extend the built-in registry with new agents but you can't override existing ones. Rename your custom entry (e.g. `my-cursor`) or remove it.
+
+## "agent skills directory not detected"
+
+```text
+! agents: github-copilot is not installed; skills[0] (agents: ["*"]) skipped
+```
+
+You used `agents: ["*"]` and one of the registry agents wasn't detected. By default gaal only installs into agents it detects. If you want to install regardless, for example, to pre-stage a fresh machine, pass `--force`:
+
+```bash
+gaal sync --force
+```
+
+## "service mode rejected"
+
+```text
+error: --dry-run and --service are incompatible
+```
+
+```text
+error: --prune and --service are incompatible
+```
+
+These are intentional. `--service` is a continuous loop; `--dry-run` would do nothing forever, and `--prune` is a destructive operation that doesn't belong in an unattended loop. Run those one-shot.
+
+## "VCS binary not found"
+
+```text
+✗ repositories[src/legacy/old-tool]: type 'svn' requires the svn binary on $PATH
+```
+
+Hg, Subversion, and Bazaar use the system binary. Install it (`brew install subversion`, `apt install subversion`, …) or convert the repository to a Git mirror.
+
+## Still stuck?
+
+Open an issue at [github.com/getgaal/gaal](https://github.com/getgaal/gaal/issues) with:
+
+- The exact command you ran.
+- The output of `gaal doctor -o json`.
+- The version from `gaal version`.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="gaal doctor" icon="stethoscope" href="/troubleshooting/doctor" />
+  <Card title="FAQ" icon="circle-question" href="/troubleshooting/faq" />
+</CardGroup>

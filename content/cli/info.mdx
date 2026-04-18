@@ -1,0 +1,67 @@
+---
+title: "gaal info"
+description: "Detailed view of a single repo, skill, MCP, or agent."
+---
+
+```bash
+gaal info <repo|skill|mcp|agent> [name]
+```
+
+Prints a full information card for every entry of the given type, combining the configuration spec with the current runtime state. With a name (or substring), filters to matching entries.
+
+## Types
+
+| Type | Shows |
+|------|-------|
+| `repo` | URL, type, configured version vs current HEAD, dirty flag. |
+| `skill` | Source, target agents, scope, selection filter, per-agent installation tree. |
+| `mcp` | Server name, target file, inline definition, merge flag, dirty detection. |
+| `agent` | Supported coding agent, skill directory paths, MCP config path, built-in vs custom. |
+
+## Filter argument
+
+The optional second argument is a case-insensitive substring match against the entry name or source.
+
+```bash
+gaal info skill                           # every skill entry
+gaal info skill vercel-labs/agent-skills  # skills sourced from this repo
+gaal info repo workspace/myrepo
+gaal info mcp claude                      # MCP entries whose name or target matches "claude"
+gaal info agent                           # all registered agents
+gaal info agent cursor
+```
+
+## Sample output
+
+```text
+$ gaal info skill frontend-design
+skill: frontend-design
+  source:       anthropics/skills
+  selection:    select [frontend-design, skill-creator]
+  scope:        project
+  agents:       claude-code, cursor
+  installed at:
+    .claude/skills/frontend-design/   (3 files, fresh)
+    .cursor/skills/frontend-design/   (3 files, fresh)
+```
+
+```text
+$ gaal info mcp filesystem
+mcp: filesystem
+  target: ~/.config/claude/claude_desktop_config.json
+  inline:
+    command: uvx
+    args:    [mcp-server-filesystem, ~/projects]
+  state:  upserted, hash matches config
+```
+
+## JSON output
+
+`gaal info <type> -o json` returns the same data as a structured object, suitable for piping into `jq` or feeding into automation.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="gaal status" icon="terminal" href="/cli/status" />
+  <Card title="gaal agents" icon="robot" href="/cli/agents" />
+</CardGroup>

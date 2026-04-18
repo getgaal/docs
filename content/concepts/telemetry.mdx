@@ -1,0 +1,63 @@
+---
+title: "Telemetry"
+description: "Anonymous usage telemetry, opt-in, off by default."
+---
+
+gaal collects **no telemetry by default**. On first run it asks once whether you want to send anonymous usage events. Your answer is written to your user-scope config file and respected on every subsequent invocation.
+
+## What's collected when telemetry is on
+
+When telemetry is enabled, gaal sends a small event for each command invocation containing:
+
+- The command name (`sync`, `status`, `doctor`, …).
+- The exit code class (`ok`, `warning`, `error`).
+- The gaal version.
+- The OS family (`linux`, `darwin`, `windows`).
+- A randomly-generated, locally-stored install ID.
+
+That's it. No file paths, no skill names, no MCP targets, no URLs from your `gaal.yaml`, no environment variables, no command-line flags.
+
+When telemetry is off (the default), gaal makes zero outbound network calls except those required to fetch sources you explicitly listed in `gaal.yaml`.
+
+## Opting in or out
+
+Set the value in your user config file:
+
+```yaml
+# ~/.config/gaal/config.yaml
+telemetry: true
+```
+
+```yaml
+# ~/.config/gaal/config.yaml
+telemetry: false
+```
+
+Or answer the prompt on first run.
+
+## Where the setting may live
+
+`telemetry` is **scope-restricted**: only the user (`~/.config/gaal/config.yaml`) and system (`/etc/gaal/config.yaml`) files may set it. A workspace `gaal.yaml` that sets `telemetry:` is ignored with a warning.
+
+This restriction exists so a `gaal.yaml` committed to a public repo can never enrol contributors in telemetry without their consent.
+
+## Verifying the current state
+
+```bash
+$ gaal doctor
+…
+✓ telemetry: disabled
+```
+
+`gaal doctor` always prints the resolved telemetry setting and the source file it came from.
+
+## Privacy policy
+
+Full details, including the receiving endpoint, retention policy, and how to request deletion of your install ID's events, are in [PRIVACY_POLICY.md](https://github.com/getgaal/gaal/blob/main/PRIVACY_POLICY.md).
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Scopes" icon="layer-group" href="/concepts/scopes" />
+  <Card title="gaal doctor" icon="stethoscope" href="/cli/doctor" />
+</CardGroup>

@@ -1,0 +1,101 @@
+---
+title: "Install"
+description: "Install gaal on macOS, Linux, or Windows."
+---
+
+gaal ships as a single static binary. Pick the install method that matches your environment.
+
+## Quick install (macOS / Linux)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/getgaal/gaal/main/scripts/install.sh | sh
+```
+
+Installs the latest release to `~/.local/bin/gaal`. Make sure `~/.local/bin` is on your `$PATH`.
+
+### Pin a version
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/getgaal/gaal/main/scripts/install.sh | VERSION=v0.1.2 sh
+```
+
+### Install elsewhere
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/getgaal/gaal/main/scripts/install.sh | INSTALL_DIR=/usr/local/bin sh
+```
+
+### Verbose output
+
+```bash
+GAAL_INSTALL_DEBUG=1 curl -fsSL https://raw.githubusercontent.com/getgaal/gaal/main/scripts/install.sh | sh
+```
+
+### Help
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/getgaal/gaal/main/scripts/install.sh | sh -s -- --help
+```
+
+## With Go
+
+If you have a Go 1.26+ toolchain installed:
+
+```bash
+go install github.com/getgaal/gaal@latest
+```
+
+The binary lands in `$GOBIN` (or `$GOPATH/bin` if `GOBIN` is unset).
+
+## From source
+
+Requires Go 1.26+ and `make`.
+
+```bash
+git clone https://github.com/getgaal/gaal.git
+cd gaal
+make build
+```
+
+The binary is written to `dist/gaal`. Move it to your `$PATH`:
+
+```bash
+sudo cp dist/gaal /usr/local/bin/gaal
+# or, user-local:
+cp dist/gaal ~/.local/bin/gaal
+```
+
+## Verify the install
+
+```bash
+$ gaal version
+gaal v0.1.0
+built 2026-04-18T09:00:00Z
+```
+
+If the command isn't found, `~/.local/bin` is probably not on your `$PATH`. Add this to your shell profile:
+
+<CodeGroup>
+```bash bash / zsh
+export PATH="$HOME/.local/bin:$PATH"
+```
+
+```fish fish
+fish_add_path ~/.local/bin
+```
+</CodeGroup>
+
+## Shell completion
+
+gaal ships completion scripts for bash, zsh, fish, and PowerShell. See the [`gaal completion`](/cli/completion) reference.
+
+## Next
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Run your first sync in five minutes.
+  </Card>
+  <Card title="How gaal works" icon="diagram-project" href="/how-gaal-works">
+    Understand the model before you write YAML.
+  </Card>
+</CardGroup>

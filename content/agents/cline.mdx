@@ -1,0 +1,45 @@
+---
+title: "Cline"
+description: "Open-source AI assistant for VS Code."
+---
+
+[Cline](https://cline.bot) is an open-source AI assistant for VS Code. Both project and global skills use the vendor-neutral `.agents/skills` and `~/.agents/skills` conventions; MCP config lives in VS Code's `settings.json`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.agents/skills` (generic fallback) |
+| Global skills | `~/.agents/skills` (generic fallback) |
+| MCP config | `~/.vscode/settings.json` |
+| Audit search (project) | `.agents/skills`, `.github/skills`, `.claude/skills` |
+| Audit search (global) | `~/.agents/skills`, `~/.copilot/skills`, `~/.claude/skills` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [cline]
+    global: false
+```
+
+Skills land in `.agents/skills/`, Cline picks them up via the generic convention.
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.vscode/settings.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

@@ -1,0 +1,67 @@
+---
+title: "FAQ"
+description: "Short answers to questions that come up a lot."
+---
+
+## Does gaal upload my configuration anywhere?
+
+No. gaal is local-only today. The only outbound network calls are to the URLs you list in `gaal.yaml` (`skills[].source`, `mcps[].source`) and, if you opted in, anonymous telemetry events. See [Telemetry](/concepts/telemetry).
+
+## Is gaal a daemon?
+
+It can be. `gaal sync` is one-shot by default; `gaal sync --service --interval 5m` keeps it running in a loop. See [Sync vs. service mode](/workflows/sync-vs-service).
+
+## Can I use gaal without git?
+
+Yes. The `git` repository type uses a pure-Go backend, so you don't need a system `git` binary. `hg`, `svn`, and `bzr` *do* require their respective system binaries. `tar` and `zip` only need an HTTPS connection.
+
+## Can I run gaal in CI?
+
+Yes. The recommended pattern is `gaal --sandbox $RUNNER_TEMP/gaal-sb sync --dry-run` to validate your config without touching the runner. See [Sandbox mode](/workflows/sandbox-mode).
+
+## Will gaal overwrite my hand-edited Claude / Cursor / VS Code config?
+
+No. gaal only touches the `mcpServers` keys it manages inside each target file. Other top-level keys, and any MCP entries not in `gaal.yaml`, are preserved. See [The upsert guarantee](/concepts/mcp-servers#the-upsert-guarantee).
+
+## Will gaal delete a skill if I remove it from gaal.yaml?
+
+Not by default. Skills you remove from the config are left in place. To clean them up, run `gaal sync --prune`. See [Pruning](/workflows/pruning).
+
+## Why isn't my gaal.yaml being picked up?
+
+gaal searches in this order: `--config` → `./gaal.yaml` → `~/.config/gaal/config.yaml` → `/etc/gaal/config.yaml`. Run `gaal doctor`, the output names the source file for every setting. If it's not finding your file, you're probably in the wrong directory or your file is named something other than `gaal.yaml`.
+
+## Can I use gaal across multiple machines?
+
+Yes, that's the main use case. Commit your `gaal.yaml` (and your user-scope config, if you keep one) to a dotfiles repo, clone it on every machine, run `gaal sync`. See [Sharing across machines](/workflows/sharing-across-machines).
+
+## Can gaal manage agents I haven't installed yet?
+
+Yes, pass `--force` to `gaal sync` and skill directories will be created for every registered agent regardless of installation. Useful for pre-staging fresh machines.
+
+## How do I add an agent gaal doesn't support?
+
+Write a custom registry file at `~/.config/gaal/agents.yaml`. See [Custom agents](/configure/custom-agents).
+
+## How do I keep secrets out of gaal.yaml?
+
+Reference environment variables in `args:` and `env:` blocks. gaal writes them through verbatim; the agent process resolves them when launching the MCP server. See [Environment & secrets](/configure/environment-and-secrets).
+
+## What's the difference between gaal and Community Edition?
+
+gaal today is the single-user CLI documented on this site. Community Edition (in development) adds a shared registry, drift detection, and approval workflows for teams. The `gaal migrate` command is the graduation path. See [`gaal migrate`](/cli/migrate).
+
+## Is gaal open source?
+
+Yes. gaal is licensed under [AGPL-3.0](https://github.com/getgaal/gaal/blob/main/LICENSE).
+
+## Where can I report a bug?
+
+[github.com/getgaal/gaal/issues](https://github.com/getgaal/gaal/issues). Include the output of `gaal version` and `gaal doctor -o json`.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="gaal doctor" icon="stethoscope" href="/troubleshooting/doctor" />
+  <Card title="Common errors" icon="circle-exclamation" href="/troubleshooting/common-errors" />
+</CardGroup>

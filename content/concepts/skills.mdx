@@ -1,0 +1,114 @@
+---
+title: "Skills"
+description: "SKILL.md collections, distributed by gaal to every agent that wants them."
+---
+
+A **skill** is a reusable capability defined in a `SKILL.md` file (and any supporting files in the same directory). Coding agents pick up skills from a known directory on disk, `.claude/skills`, `.cursor/skills`, `.github/skills`, and so on.
+
+gaal's job is to take a single skill source and install it into the right directory for every agent you target.
+
+## Why skills are interesting
+
+Each agent has its own skill convention, but the *content* is portable. A `code-review` skill written for Claude Code works in Cursor, Codex, and Copilot with no changes. Without gaal you copy the directory three times. With gaal you write one entry and let the renderers fan it out.
+
+## Sources
+
+A skill source can be any of:
+
+| Source format | Example |
+|---------------|---------|
+| GitHub shorthand | `anthropics/skills` |
+| Full HTTPS URL | `https://github.com/anthropics/skills` |
+| Git SSH URL | `git@github.com:anthropics/skills.git` |
+| Local path | `./company-skills` or `~/my-skills` |
+
+A source can contain one or many skills. Each top-level directory inside the source that contains a `SKILL.md` is one skill.
+
+## Targeting agents
+
+Every skill entry says which agents to install it for:
+
+```yaml
+skills:
+  - source: anthropics/skills
+    agents: ["*"]                     # every detected agent
+
+  - source: vercel-labs/agent-skills
+    agents: [claude-code, cursor]     # explicit list
+```
+
+`["*"]` is a wildcard that resolves at sync time to **the agents currently installed on this machine**. Agents that aren't installed are skipped. Use `gaal sync --force` to install into every registered agent regardless of whether the agent is detected.
+
+## Project vs global
+
+Each entry chooses one of two install layouts:
+
+```yaml
+skills:
+  - source: anthropics/skills
+    agents: ["*"]
+    global: false        # default, installs into ./<agent>/skills
+  - source: my-utils
+    agents: [claude-code]
+    global: true         # installs into ~/.<agent>/skills
+```
+
+| `global` | Where skills are installed |
+|----------|---------------------------|
+| `false` (default) | Per-project: `./.claude/skills/<skill>`, `./.cursor/skills/<skill>`, … |
+| `true` | Per-user: `~/.claude/skills/<skill>`, `~/.cursor/skills/<skill>`, … |
+
+Use **project** for skills tied to one repo (CI helpers, codebase-specific reviewers). Use **global** for skills you want available everywhere (your personal git-helper, formatting preferences).
+
+## Selecting a subset
+
+By default every skill in the source is installed. Use `select:` to install only specific ones:
+
+```yaml
+skills:
+  - source: anthropics/skills
+    agents: [claude-code, github-copilot]
+    select:
+      - frontend-design
+      - skill-creator
+```
+
+The names must match the skill's directory name in the source.
+
+## What gets written where
+
+For every (source × agent) pair, gaal writes the selected skills under the agent's skills directory using the agent's native layout. For example, with this entry:
+
+```yaml
+- source: anthropics/skills
+  agents: [claude-code, cursor]
+  select: [frontend-design]
+  global: false
+```
+
+gaal writes:
+
+```
+./.claude/skills/frontend-design/SKILL.md
+./.claude/skills/frontend-design/...
+./.cursor/skills/frontend-design/SKILL.md
+./.cursor/skills/frontend-design/...
+```
+
+See [Agent integrations](/agents/overview) for the exact path used by each agent.
+
+## Behaviour during sync
+
+- Skills already at the right version are reported `= unchanged`.
+- New skills are added.
+- Skills that are *no longer in the config* are left alone unless you pass `--prune`.
+- Sources are fetched once per sync and reused across all agents that target them.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="gear" href="/configure/skills" />
+  <Card title="Agent integrations" icon="robot" href="/agents/overview" />
+  <Card title="Pruning" icon="scissors" href="/workflows/pruning" />
+  <Card title="Schema: skills" icon="file-code" href="/schema/skills" />
+</CardGroup>

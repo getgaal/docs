@@ -1,0 +1,57 @@
+---
+title: "gaal migrate"
+description: "Validate and prepare configuration for Community Edition."
+---
+
+```bash
+gaal migrate --to community <url> [flags]
+```
+
+Validates the local configuration and confirms it is ready to push to a gaal Community Edition instance. Today, Community Edition is not publicly available, running this command validates your YAML and prints what *would* be migrated.
+
+## Flags
+
+| Flag | Description |
+|------|-------------|
+| `--to <target>` | Migration target. Currently only `community` is supported. **Required.** |
+| `--dry-run` | Validate everything but do not perform the migration. |
+| `--yes` | Skip the interactive confirmation prompt. |
+
+Plus all [global flags](/cli/overview#global-flags).
+
+## Examples
+
+```bash
+gaal migrate --to community https://community.example.com
+gaal migrate --to community https://community.example.com --dry-run
+gaal migrate --to community https://community.example.com --yes
+```
+
+## Today's behaviour
+
+Running `gaal migrate` against the current release validates your configuration end-to-end and prints a short notice:
+
+```text
+gaal Community Edition is not yet available. Your configuration is valid and
+ready to migrate when Community ships. Join the announcement list:
+https://getgaal.com
+```
+
+Use this command now to confirm your config is migration-ready. When Community ships, the same command will perform the actual push.
+
+## What migration covers
+
+When Community ships, `gaal migrate` will package and upload:
+
+- Every `repositories[]` entry.
+- Every `skills[]` entry, with its source pin and agent targeting.
+- Every `mcps[]` entry, with its target and definition.
+
+Local-only concerns (telemetry, scope-restricted fields, hand-merged MCP entries you didn't author) are not migrated.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="gaal doctor" icon="stethoscope" href="/cli/doctor" />
+  <Card title="The gaal.yaml file" icon="file-code" href="/concepts/gaal-yaml" />
+</CardGroup>

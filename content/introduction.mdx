@@ -1,0 +1,76 @@
+---
+title: "Introduction"
+description: "One YAML file. Every coding agent on your machine in sync."
+---
+
+**gaal** is a single CLI that keeps your local repositories, AI agent skills, and MCP server configurations in sync from one declarative `gaal.yaml` file.
+
+If you use Claude Code at work, Cursor at home, and try Codex on the side, your skills and MCP servers usually live in three places, `.claude/`, `.cursor/`, `~/.codex/`, drifting out of sync the moment you set up a new machine. gaal fixes that. You write one file, run `gaal sync`, and every installed agent gets the same tools.
+
+## What gaal manages
+
+| Resource | What it does |
+|----------|--------------|
+| **Repositories** | Clones or updates Git, Mercurial, Subversion, Bazaar, tar, and zip sources into your workspace. |
+| **Skills** | Installs `SKILL.md` collections into each agent's native skills directory (`.claude/skills`, `.cursor/skills`, `.github/skills`, …). |
+| **MCP servers** | Upserts MCP server entries into each agent's JSON config file without touching your other settings. |
+
+## What it looks like
+
+```yaml gaal.yaml
+schema: 1
+
+repositories:
+  src/gaal:
+    type: git
+    url: https://github.com/getgaal/gaal.git
+    version: main
+
+skills:
+  - source: anthropics/skills
+    agents: ["*"]            # install in every detected agent
+    select:
+      - frontend-design
+      - skill-creator
+
+mcps:
+  - name: filesystem
+    target: ~/.config/claude/claude_desktop_config.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+```bash
+$ gaal sync
+✓ src/gaal              up-to-date
+✓ skills/frontend-design installed in claude-code, cursor
+✓ mcp/filesystem        upserted in claude_desktop_config.json
+```
+
+## Who it's for
+
+- **Solo developers** running multiple coding agents who want their setup reproducible across machines via dotfiles.
+- **Power users** maintaining curated skill sets across projects and teams.
+- **Anyone** tired of copy-pasting MCP JSON snippets between agents.
+
+## What's next
+
+<CardGroup cols={2}>
+  <Card title="Install gaal" icon="download" href="/install">
+    Five ways to get the binary on your machine.
+  </Card>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Audit, init, and sync in five minutes.
+  </Card>
+  <Card title="How gaal works" icon="diagram-project" href="/how-gaal-works">
+    The mental model: YAML → renderers → agent files.
+  </Card>
+  <Card title="The gaal.yaml file" icon="file-code" href="/concepts/gaal-yaml">
+    Top-level keys and how they fit together.
+  </Card>
+</CardGroup>
+
+## What's next for gaal
+
+gaal today is the free, single-user CLI documented on this site. A team-focused **Community Edition** with shared registries, drift detection, and approval workflows is in development. See [`gaal migrate`](/cli/migrate) for the graduation path.

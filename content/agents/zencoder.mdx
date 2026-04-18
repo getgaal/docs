@@ -1,0 +1,43 @@
+---
+title: "Zencoder"
+description: "Zencoder AI coding agent."
+---
+
+[Zencoder](https://zencoder.ai) is an AI coding agent. Skills live under `.zencoder/skills`; MCP config lives under `~/.zencoder/mcp.json`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.zencoder/skills` |
+| Global skills | `~/.zencoder/skills` |
+| MCP config | `~/.zencoder/mcp.json` |
+| Audit search (project) | `.zencoder/skills`, `.agents/skills`, `.github/skills`, `.claude/skills` |
+| Audit search (global) | `~/.zencoder/skills`, `~/.agents/skills`, `~/.copilot/skills` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [zencoder]
+    global: false
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.zencoder/mcp.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

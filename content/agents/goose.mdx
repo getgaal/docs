@@ -1,0 +1,43 @@
+---
+title: "Goose"
+description: "Block's open-source AI coding agent."
+---
+
+[Goose](https://block.github.io/goose/) is an open-source AI agent. Skills live under `.goose/skills`; MCP config lives under `~/.config/goose/config.yaml`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.goose/skills` |
+| Global skills | `~/.config/goose/skills` |
+| MCP config | `~/.config/goose/config.yaml` |
+| Audit search (project) | `.goose/skills`, `.agents/skills`, `.github/skills` |
+| Audit search (global) | `~/.config/goose/skills`, `~/.agents/skills`, `~/.copilot/skills` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [goose]
+    global: false
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.config/goose/config.yaml
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

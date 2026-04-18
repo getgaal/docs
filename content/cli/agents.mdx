@@ -1,0 +1,66 @@
+---
+title: "gaal agents"
+description: "List registered coding agents and detection status."
+---
+
+```bash
+gaal agents [name] [flags]
+```
+
+Lists every coding agent in the registry (built-in plus any custom entries). With a name, prints a detailed view for that agent.
+
+## Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-i`, `--installed` | off | Show only agents detected on this machine. |
+
+Plus all [global flags](/cli/overview#global-flags).
+
+## Sample output (list)
+
+```text
+$ gaal agents
+NAME             INSTALLED  PROJECT_SKILLS    GLOBAL_SKILLS                MCP_CONFIG
+claude-code      yes        .claude/skills    ~/.claude/skills             ~/.config/claude/claude_desktop_config.json
+cursor           yes        .agents/skills    ~/.cursor/skills             ~/.cursor/mcp.json
+codex            yes        .agents/skills    ~/.codex/skills              ~/.codex/mcp.json
+github-copilot   no         .github/skills    ~/.copilot/skills            ~/.vscode/settings.json
+windsurf         no         .windsurf/skills  ~/.codeium/windsurf/skills   ~/.codeium/windsurf/mcp_settings.json
+…
+```
+
+Installed agents are listed first.
+
+## Detailed view
+
+```text
+$ gaal agents claude-code
+claude-code (installed)
+  source:           built-in
+  project skills:   .claude/skills
+  global skills:    ~/.claude/skills
+  mcp config:       ~/.config/claude/claude_desktop_config.json (exists)
+  audit search (project):
+    .claude/skills, .agents/skills, .github/skills
+  audit search (global):
+    ~/.claude/skills, ~/.agents/skills, ~/.copilot/skills
+  package-manager search:
+    ~/.claude/plugins/cache
+```
+
+## JSON output
+
+```bash
+gaal agents -o json
+```
+
+Returns the registry as structured JSON, suitable for scripting or feeding a CI step.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Agent integrations" icon="robot" href="/agents/overview" />
+  <Card title="Custom agents" icon="screwdriver-wrench" href="/configure/custom-agents" />
+  <Card title="gaal info" icon="circle-info" href="/cli/info" />
+</CardGroup>

@@ -1,0 +1,37 @@
+---
+title: "gaal version"
+description: "Print the gaal version and build time."
+---
+
+```bash
+gaal version
+```
+
+Prints the gaal binary version and its build timestamp.
+
+## Sample output
+
+```text
+$ gaal version
+gaal v0.1.0
+built 2026-04-18T09:00:00Z
+```
+
+When opening a bug report, paste this output along with `gaal doctor -o json`.
+
+## JSON output
+
+```bash
+$ gaal version -o json
+{
+  "version": "v0.1.0",
+  "built":   "2026-04-18T09:00:00Z"
+}
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Install" icon="download" href="/install" />
+  <Card title="gaal doctor" icon="stethoscope" href="/cli/doctor" />
+</CardGroup>

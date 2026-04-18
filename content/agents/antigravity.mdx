@@ -1,0 +1,36 @@
+---
+title: "Antigravity"
+description: "Google's agentic IDE based on Gemini."
+---
+
+[Antigravity](https://antigravity.google) is Google's agentic IDE built on Gemini. It does not currently support MCP servers via gaal, only skills are managed.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.agents/skills` (generic fallback) |
+| Global skills | `~/.gemini/antigravity/skills` |
+| MCP config |, (not supported) |
+| Audit search (project) | `.agents/skills`, `.github/skills`, `.claude/skills` |
+| Audit search (global) | `~/.gemini/antigravity/skills`, `~/.gemini/skills`, `~/.agents/skills` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [antigravity]
+    global: true       # → ~/.gemini/antigravity/skills
+```
+
+## MCP servers
+
+Antigravity does not have a gaal-managed MCP config target. If MCP support lands in a future Antigravity release, gaal will add it to the registry.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Agents & renderers" icon="robot" href="/concepts/agents-and-renderers" />
+</CardGroup>

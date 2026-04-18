@@ -1,0 +1,113 @@
+---
+title: "Configure skills"
+description: "Cookbook for the skills: block of gaal.yaml."
+---
+
+This page is a working reference for the `skills:` block. For the conceptual model, see [Concepts → Skills](/concepts/skills).
+
+## Install everything from a GitHub repo to every detected agent
+
+```yaml
+skills:
+  - source: vercel-labs/agent-skills
+    agents: ["*"]
+```
+
+Defaults: `global: false` (project-local), every skill in the source.
+
+## Install specific skills, in specific agents
+
+```yaml
+skills:
+  - source: anthropics/skills
+    agents:
+      - claude-code
+      - github-copilot
+    select:
+      - frontend-design
+      - skill-creator
+```
+
+`select:` matches the skill directory name in the source repo.
+
+## Install globally (across every project on this machine)
+
+```yaml
+skills:
+  - source: my-utils
+    agents: [claude-code]
+    global: true
+```
+
+Files land under `~/.claude/skills/` and are visible to Claude Code in every project.
+
+## Mix project and global
+
+```yaml
+skills:
+  # global utilities, available in every project
+  - source: my-utils
+    agents: [claude-code, cursor]
+    global: true
+
+  # codebase-specific reviewer, only for this project
+  - source: ./skills/reviewer
+    agents: ["*"]
+    global: false
+```
+
+## Source from a local directory
+
+```yaml
+skills:
+  - source: ./company-skills
+    agents: [claude-code, cursor]
+    global: false
+```
+
+Relative paths resolve against the directory of the `gaal.yaml` file. `~/`-prefixed paths resolve against the user's home directory.
+
+## Source from a full URL
+
+```yaml
+skills:
+  - source: https://github.com/microsoft/github-copilot-for-azure
+    agents: [github-copilot]
+    global: true
+```
+
+## Source from SSH
+
+```yaml
+skills:
+  - source: git@github.com:acme/private-skills.git
+    agents: ["*"]
+```
+
+Authentication uses your local SSH agent.
+
+## Force install into every registered agent
+
+By default, the `["*"]` wildcard expands only to agents detected on this machine. If you want gaal to populate skill directories for agents that aren't installed yet (for example, to pre-stage a fresh machine), use `--force`:
+
+```bash
+gaal sync --force
+```
+
+This applies only to entries with `agents: ["*"]`. Explicit agent lists are honoured as-is.
+
+## Behaviour at sync time
+
+- Skills already at the right version are reported `= unchanged`.
+- New skills are added.
+- Skills no longer in the config are left in place unless you pass `--prune`.
+- Each skill source is fetched once per sync and reused across all agents that target it.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Concepts: skills" icon="brain" href="/concepts/skills" />
+  <Card title="Agent integrations" icon="robot" href="/agents/overview" />
+  <Card title="Pruning" icon="scissors" href="/workflows/pruning" />
+  <Card title="Schema: skills" icon="file-code" href="/schema/skills" />
+</CardGroup>

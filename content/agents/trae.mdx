@@ -1,0 +1,44 @@
+---
+title: "Trae"
+description: "Adaptive AI IDE by ByteDance."
+---
+
+[Trae](https://trae.ai) is an adaptive AI IDE. Skills live under `.trae/skills`; MCP config lives under `~/.trae/mcp.json`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.trae/skills` |
+| Global skills | `~/.trae/skills` |
+| MCP config | `~/.trae/mcp.json` |
+| Audit search (project) | `.trae/skills`, `.agents/skills`, `.github/skills`, `.claude/skills` |
+| Audit search (global) | `~/.trae/skills`, `~/.agents/skills`, `~/.copilot/skills` |
+| Package-manager search | `~/.trae/extensions` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [trae]
+    global: false
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.trae/mcp.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

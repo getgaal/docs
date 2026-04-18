@@ -1,0 +1,65 @@
+---
+title: "Claude Code"
+description: "Anthropic's terminal coding agent."
+---
+
+[Claude Code](https://docs.claude.com/en/docs/claude-code/overview) is Anthropic's terminal-native coding agent. gaal manages its skills directories and its MCP server config.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.claude/skills` |
+| Global skills | `~/.claude/skills` |
+| MCP config | `~/.config/claude/claude_desktop_config.json` |
+| Audit search (project) | `.claude/skills`, `.agents/skills`, `.github/skills` |
+| Audit search (global) | `~/.claude/skills`, `~/.agents/skills`, `~/.copilot/skills` |
+| Package-manager search | `~/.claude/plugins/cache` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [claude-code]
+    select: [frontend-design, skill-creator]
+    global: false
+```
+
+After `gaal sync`:
+
+```
+.claude/skills/frontend-design/SKILL.md
+.claude/skills/skill-creator/SKILL.md
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.config/claude/claude_desktop_config.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+The entry is upserted under `mcpServers` in `claude_desktop_config.json`. Other keys in the file are preserved.
+
+## Detecting installation
+
+```bash
+$ gaal agents claude-code
+claude-code (installed)
+  project skills:  .claude/skills
+  global skills:   ~/.claude/skills
+  mcp config:      ~/.config/claude/claude_desktop_config.json (exists)
+  pm cache:        ~/.claude/plugins/cache
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

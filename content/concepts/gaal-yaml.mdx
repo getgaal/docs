@@ -1,0 +1,117 @@
+---
+title: "The gaal.yaml file"
+description: "The single declarative file that drives every sync."
+---
+
+`gaal.yaml` is the entire user-facing surface of gaal. Everything else, commands, audit, planning, rendering, exists to read this file and reconcile it against your filesystem.
+
+## File location
+
+gaal looks for the configuration file in this order:
+
+1. The path passed to `--config`, if any.
+2. `gaal.yaml` in the current working directory.
+3. `~/.config/gaal/config.yaml` (user scope).
+4. `/etc/gaal/config.yaml` (system scope).
+
+When multiple are present, the higher-priority file overrides the lower one. See [Scopes](/concepts/scopes) for the merge rules.
+
+## Top-level keys
+
+```yaml gaal.yaml
+schema: 1
+
+repositories:
+  # local-path: { type, url, version }
+
+skills:
+  # - { source, agents, global, select }
+
+mcps:
+  # - { name, target, source | inline }
+
+telemetry: false   # opt-in, user/system scope only
+```
+
+| Key | Type | Required | Purpose |
+|-----|------|----------|---------|
+| [`schema`](/schema/schema-version) | integer | recommended | Config version, always `1` for the current gaal release. Stable forever. |
+| [`repositories`](/schema/repositories) | map | no | VCS-managed sources cloned into your workspace. |
+| [`skills`](/schema/skills) | array | no | `SKILL.md` collections to install per agent. |
+| [`mcps`](/schema/mcps) | array | no | MCP server entries upserted into agent JSON configs. |
+| [`telemetry`](/schema/telemetry) | bool | no | Opt-in anonymous usage telemetry. Off by default. |
+
+Every key is independent. A file with only `skills:` is a valid gaal.yaml and a sync only touches skills.
+
+## A complete example
+
+```yaml gaal.yaml
+schema: 1
+
+repositories:
+  src/gaal:
+    type: git
+    url: https://github.com/getgaal/gaal.git
+    version: main
+
+  src/dataset:
+    type: tar
+    url: https://example.com/releases/dataset-2024.tar.gz
+    version: dataset-2024
+
+skills:
+  - source: anthropics/skills
+    agents: ["*"]
+    select: [frontend-design, skill-creator]
+
+  - source: ./company-skills
+    agents: [claude-code, cursor]
+    global: false
+
+mcps:
+  - name: filesystem
+    target: ~/.config/claude/claude_desktop_config.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+
+  - name: github
+    source: https://example.com/mcp/github.json
+    target: ~/.config/claude/claude_desktop_config.json
+```
+
+## Validate before sync
+
+Two ways to check a `gaal.yaml` is well-formed:
+
+```bash
+$ gaal doctor
+✓ config: gaal.yaml is valid
+```
+
+```bash
+$ gaal sync --dry-run
+plan:
+  ...
+```
+
+Both surface schema errors with line numbers.
+
+## IDE auto-completion
+
+`gaal schema` writes the JSON Schema for `gaal.yaml`. Drop it into your editor and you get inline validation and completion as you type:
+
+```bash
+gaal schema -f schema.json
+```
+
+See [`gaal schema`](/cli/schema) for VS Code and JetBrains setup.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Repositories" icon="folder-tree" href="/concepts/repositories" />
+  <Card title="Skills" icon="brain" href="/concepts/skills" />
+  <Card title="MCP servers" icon="plug" href="/concepts/mcp-servers" />
+  <Card title="Scopes" icon="layer-group" href="/concepts/scopes" />
+</CardGroup>

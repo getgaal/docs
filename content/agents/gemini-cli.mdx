@@ -1,0 +1,44 @@
+---
+title: "Gemini CLI"
+description: "Google's terminal coding agent."
+---
+
+[Gemini CLI](https://github.com/google-gemini/gemini-cli) is Google's terminal coding agent. Project skills use the vendor-neutral `.agents/skills` convention; global skills live under `~/.gemini/skills`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.agents/skills` (generic fallback) |
+| Global skills | `~/.gemini/skills` |
+| MCP config | `~/.gemini/settings.json` |
+| Audit search (project) | `.agents/skills`, `.github/skills`, `.claude/skills` |
+| Audit search (global) | `~/.gemini/skills`, `~/.agents/skills`, `~/.copilot/skills` |
+| Package-manager search | `~/.gemini/extensions` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [gemini-cli]
+    global: true
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.gemini/settings.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

@@ -1,0 +1,81 @@
+---
+title: "Previewing changes (--dry-run)"
+description: "See what sync would do before letting it touch your disk."
+---
+
+`gaal sync --dry-run` runs the full audit and planning pipeline but writes nothing. It's the safety net you reach for whenever you're not sure what's in the pipeline.
+
+## The basics
+
+```bash
+$ gaal sync --dry-run
+plan:
+  repositories
+    + clone   src/example          (git, main)
+    ~ update  src/gaal             (git, main → main, 2 commits ahead)
+    = unchanged src/dataset
+  skills
+    + install code-review          → claude-code, cursor
+    ~ update  git-helper           → claude-code (v1.2 → v1.3)
+    = unchanged refactor           → claude-code
+  mcps
+    + upsert  filesystem           → ~/.config/claude/claude_desktop_config.json
+    = unchanged github             → ~/.config/claude/claude_desktop_config.json
+```
+
+The legend:
+
+| Symbol | Meaning |
+|--------|---------|
+| `+` | Will be created. |
+| `~` | Will be updated in place. |
+| `=` | Already in the desired state. |
+| `-` | Would be removed (only with `--prune`). |
+
+## Exit codes
+
+`--dry-run` uses the exit code as a status signal so you can drive it from scripts:
+
+| Code | Meaning |
+|------|---------|
+| `0` | Nothing to change. State is fully reconciled. |
+| `1` | Changes are pending. Run `gaal sync` to apply them. |
+| `2` | Error during planning (config invalid, source unreachable, …). |
+
+```bash
+gaal sync --dry-run && echo "in sync"
+```
+
+## Machine-readable output
+
+```bash
+gaal sync --dry-run -o json
+```
+
+Returns a structured plan suitable for piping into `jq` or feeding a CI step. The ASCII banner is suppressed automatically when `-o json` is set.
+
+## Combining with other flags
+
+| Combo | Behaviour |
+|-------|-----------|
+| `--dry-run --prune` | Reports what would be removed, removes nothing. |
+| `--dry-run --force` | Reports installs that would happen into agents not currently detected. |
+| `--dry-run --sandbox /tmp/sb` | Plans against the sandboxed filesystem, not your real one. |
+| `--dry-run --service` | **Rejected.** A dry-run service loop is meaningless. |
+
+## CI pattern: fail the build on drift
+
+Run dry-run with `set -e` in CI to fail when checked-in skills/MCP entries don't match the committed config:
+
+```bash
+gaal sync --dry-run -o json | tee plan.json
+test "$(jq -r '.changes | length' plan.json)" -eq 0
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="gaal sync" icon="arrows-rotate" href="/cli/sync" />
+  <Card title="Pruning" icon="scissors" href="/workflows/pruning" />
+  <Card title="Sync vs. service mode" icon="repeat" href="/workflows/sync-vs-service" />
+</CardGroup>

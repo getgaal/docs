@@ -1,0 +1,118 @@
+---
+title: "First-time setup from an existing machine"
+description: "Turn the skills and MCP servers already on your machine into a gaal.yaml."
+---
+
+If you've been using coding agents for a while, your machine probably already has skills scattered across `.claude/skills`, `.cursor/skills`, `.github/skills`, plus MCP servers in two or three JSON files. The fastest path to a useful `gaal.yaml` is to ask gaal to inventory what's there and import it.
+
+## 1. Audit what's on disk
+
+```bash
+$ gaal audit
+discovered:
+  skills (project)
+    .claude/skills/code-review     (claude-code)
+    .cursor/skills/test-writer     (cursor)
+  skills (global)
+    ~/.claude/skills/git-helper    (claude-code)
+    ~/.cursor/skills/refactor      (cursor)
+  mcps
+    ~/.config/claude/claude_desktop_config.json
+      filesystem, git, github
+    ~/.cursor/mcp.json
+      filesystem
+```
+
+`gaal audit` writes nothing. It scans:
+
+- Project-relative skill directories (`.claude/skills`, `.cursor/skills`, `.github/skills`, `.agents/skills`, …).
+- Global skill directories (`~/.claude/skills`, `~/.cursor/skills`, `~/.agents/skills`, …).
+- Per-agent package-manager paths (`~/.cursor/extensions`, `~/.claude/plugins/cache`, …).
+- Every agent's MCP config file.
+
+## 2. Choose a scope
+
+Decide whether the imported config should live with this project or follow you across projects:
+
+- **Project (`./gaal.yaml`)**, gets committed into the repo. Best for codebase-specific skills and project-tied MCP servers.
+- **Global (`~/.config/gaal/config.yaml`)**, applies in every workspace. Best for personal helper skills and shared MCP servers like `filesystem`.
+
+You can mix: keep your personal stuff in the user file and per-project stuff in the workspace file. They merge cleanly. See [Scopes](/concepts/scopes).
+
+## 3. Run the wizard
+
+```bash
+$ gaal init
+? How should we create your gaal.yaml?
+  ▸ Import everything detected on this machine
+    Start from an empty documented skeleton
+
+? Where should this configuration apply?
+  ▸ Project (./gaal.yaml)
+    Global (~/.config/gaal/config.yaml)
+
+? Select skills to import (Space to toggle, Enter to confirm)
+  [x] code-review (claude-code, project)
+  [x] test-writer (cursor, project)
+  [x] git-helper (claude-code, global)
+  [ ] refactor (cursor, global)
+
+? Select MCP servers to import
+  [x] filesystem  → claude_desktop_config.json
+  [x] git         → claude_desktop_config.json
+  [ ] github      → claude_desktop_config.json
+  [x] filesystem  → cursor/mcp.json
+
+✓ wrote gaal.yaml (12 skills, 3 mcps)
+```
+
+Everything is preselected. Press Enter to accept, or Space to toggle individual entries.
+
+## 4. Skip the wizard (CI / scripts)
+
+```bash
+# Import everything detected, project scope
+gaal init --import-all --scope project
+
+# Empty annotated skeleton, global scope
+gaal init --empty --scope global
+
+# Overwrite an existing file
+gaal init --import-all --scope project --force
+```
+
+`--empty` and `--import-all` are mutually exclusive. One is required when stdin is not a TTY.
+
+## 5. Preview before syncing
+
+Always run a dry-run first:
+
+```bash
+gaal sync --dry-run
+```
+
+Exit codes: **0** = no changes pending, **1** = changes pending, **2** = error.
+
+## 6. Sync for real
+
+```bash
+gaal sync
+```
+
+## 7. Commit and ship
+
+```bash
+git add gaal.yaml
+git commit -m "gaal: import current setup"
+```
+
+On every other machine you own, clone the repo, `cd` in, and run `gaal sync`. You're set up.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Sharing across machines" icon="cloud-arrow-up" href="/workflows/sharing-across-machines" />
+  <Card title="gaal init" icon="terminal" href="/cli/init" />
+  <Card title="gaal audit" icon="magnifying-glass" href="/cli/audit" />
+  <Card title="Dry-run" icon="eye" href="/workflows/dry-run" />
+</CardGroup>

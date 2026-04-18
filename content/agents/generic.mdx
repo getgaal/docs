@@ -1,0 +1,50 @@
+---
+title: "Generic"
+description: "The vendor-neutral fallback for agents that share .agents/skills."
+---
+
+`generic` is a built-in pseudo-agent that owns the vendor-neutral `.agents/skills` (project) and `~/.agents/skills` (global) directories. Several agents, Cursor, Codex, Cline, Warp, Gemini CLI, OpenCode, Amp, Antigravity, install through the generic renderer rather than maintaining their own skills directory.
+
+## When you'd target it directly
+
+Most of the time you won't. You'll target the actual agents you use:
+
+```yaml
+skills:
+  - source: my-skills
+    agents: [cursor, codex, cline]
+```
+
+…and gaal will write to the right shared directory because each of those agents declares `supports_generic_project: true`.
+
+You target `generic` directly when you want to populate the shared directory **without** depending on a specific agent being installed:
+
+```yaml
+skills:
+  - source: my-skills
+    agents: [generic]
+    global: false       # → .agents/skills
+```
+
+This is useful for pre-staging a new machine, or for installing skills that any future generic-fallback agent will pick up.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.agents/skills` |
+| Global skills | `~/.agents/skills` |
+| MCP config |, (no MCP target) |
+| Audit search (project) | `.agents/skills` |
+| Audit search (global) | `~/.agents/skills` |
+
+## MCP servers
+
+`generic` doesn't own an MCP config file. To install MCP servers for generic-fallback agents, target the agent's actual MCP config. See the relevant per-agent page.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Agents & renderers" icon="robot" href="/concepts/agents-and-renderers" />
+  <Card title="Custom agents" icon="screwdriver-wrench" href="/configure/custom-agents" />
+</CardGroup>

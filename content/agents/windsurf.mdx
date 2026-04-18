@@ -1,0 +1,44 @@
+---
+title: "Windsurf"
+description: "Codeium's AI-first IDE."
+---
+
+[Windsurf](https://windsurf.com) (by Codeium) reads skills from `.windsurf/skills` and MCP config from `~/.codeium/windsurf/mcp_settings.json`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.windsurf/skills` |
+| Global skills | `~/.codeium/windsurf/skills` |
+| MCP config | `~/.codeium/windsurf/mcp_settings.json` |
+| Audit search (project) | `.windsurf/skills`, `.agents/skills`, `.github/skills`, `.claude/skills` |
+| Audit search (global) | `~/.codeium/windsurf/skills`, `~/.agents/skills`, `~/.copilot/skills` |
+| Package-manager search | `~/.windsurf/extensions` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [windsurf]
+    select: [frontend-design]
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.codeium/windsurf/mcp_settings.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

@@ -1,0 +1,51 @@
+---
+title: "GitHub Copilot"
+description: "Copilot in VS Code, with MCP via VS Code settings."
+---
+
+[GitHub Copilot](https://docs.github.com/en/copilot) reads agent skills from `.github/skills` and reads MCP server configuration from VS Code's `settings.json`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.github/skills` |
+| Global skills | `~/.copilot/skills` |
+| MCP config | `~/.vscode/settings.json` |
+| Audit search (project) | `.github/skills`, `.agents/skills`, `.claude/skills` |
+| Audit search (global) | `~/.copilot/skills`, `~/.claude/skills`, `~/.agents/skills` |
+| Package-manager search | `~/.vscode/agent-plugins` |
+
+See also: [VS Code Copilot agent skills docs](https://code.visualstudio.com/docs/copilot/customization/agent-skills#_create-a-skill).
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [github-copilot]
+    select: [frontend-design]
+    global: false      # → .github/skills
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: github
+    target: ~/.vscode/settings.json
+    inline:
+      command: npx
+      args: ["-y", "@modelcontextprotocol/server-github"]
+      env:
+        GITHUB_PERSONAL_ACCESS_TOKEN: ${GITHUB_TOKEN}
+```
+
+gaal upserts under the `mcpServers` key while leaving every other VS Code setting in place.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

@@ -1,0 +1,60 @@
+---
+title: "gaal status"
+description: "Print the current state of every repo, skill, and MCP entry."
+---
+
+```bash
+gaal status [flags]
+```
+
+Reports the actual state of every resource managed by `gaal.yaml`, what's on disk, what version, where it lives. `status` writes nothing.
+
+## Flags
+
+Only the [global flags](/cli/overview#global-flags). The `-o json` flag is most useful here for scripting.
+
+## Sample output (table)
+
+```text
+$ gaal status
+repositories
+  src/gaal               git · main · clean
+  src/anthropics-skills  git · v1.4.0 · clean
+
+skills
+  frontend-design        claude-code, cursor (project)
+  skill-creator          claude-code (project)
+  git-helper             claude-code (global)
+
+mcps
+  filesystem             ~/.config/claude/claude_desktop_config.json
+  github                 ~/.config/claude/claude_desktop_config.json
+  filesystem             ~/.cursor/mcp.json
+```
+
+## Sample output (JSON)
+
+```bash
+gaal status -o json
+```
+
+```json
+{
+  "repositories": [
+    { "path": "src/gaal", "type": "git", "version": "main", "dirty": false }
+  ],
+  "skills": [
+    { "name": "frontend-design", "agents": ["claude-code", "cursor"], "scope": "project" }
+  ],
+  "mcps": [
+    { "name": "filesystem", "target": "~/.config/claude/claude_desktop_config.json" }
+  ]
+}
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="gaal info" icon="circle-info" href="/cli/info" />
+  <Card title="gaal doctor" icon="stethoscope" href="/cli/doctor" />
+</CardGroup>

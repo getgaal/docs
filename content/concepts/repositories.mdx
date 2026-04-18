@@ -1,0 +1,93 @@
+---
+title: "Repositories"
+description: "Multi-protocol source clones managed by gaal."
+---
+
+A **repository** in gaal is any external source, Git remote, Mercurial repo, tarball, zip, that you want present at a known path inside your workspace. gaal owns the contents at that path.
+
+## Why repositories live in gaal.yaml
+
+Most coding agents work inside a project, not a single file. Skills and MCP servers often *come from* repositories you'd otherwise clone by hand. By declaring repos in `gaal.yaml` you get:
+
+- **Reproducibility**, the same `gaal sync` produces the same checked-out tree on every machine.
+- **Pinning**, every entry can pin to a tag, branch, or commit.
+- **Multi-protocol**, Git is the common case, but `tar` and `zip` work for releases that aren't on a forge.
+
+## Supported types
+
+| Type | Backend | Pin via `version:` |
+|------|---------|---------------------|
+| `git` | pure-Go (no system git required) | branch, tag, commit |
+| `hg` | system `hg` binary | revision |
+| `svn` | system `svn` binary | revision number |
+| `bzr` | system `bzr` binary | revision |
+| `tar` | downloaded archive, extracted in place | strip-prefix string |
+| `zip` | downloaded archive, extracted in place | strip-prefix string |
+
+## Shape
+
+```yaml
+repositories:
+  <local-path>:
+    type: git | hg | svn | bzr | tar | zip
+    url:  <remote-url-or-local-path>
+    version: <branch | tag | commit | revision | prefix>   # optional
+```
+
+The map key is the **destination path**, relative to the workspace root (or absolute if you really mean it).
+
+## Examples
+
+```yaml gaal.yaml
+repositories:
+  src/gaal:                       # git, branch
+    type: git
+    url: https://github.com/getgaal/gaal.git
+    version: main
+
+  src/tools/my-python-lib:        # git, tag pin
+    type: git
+    url: https://github.com/example/my-python-lib.git
+    version: v2.1.0
+
+  src/legacy/old-tool:            # svn revision
+    type: svn
+    url: https://svn.example.com/repos/old-tool/trunk
+    version: "1234"
+
+  src/data/dataset:               # release tarball
+    type: tar
+    url: https://example.com/releases/dataset-2024.tar.gz
+    version: dataset-2024         # strip this prefix on extract
+```
+
+## Behaviour during sync
+
+- **First sync**, the repo is cloned (or extracted) into the configured path.
+- **Subsequent syncs**, `git fetch` + checkout for VCS types; re-download + re-extract for archive types when the URL or version changes.
+- **`--dry-run`** prints `+ clone`, `~ update`, or `= unchanged` for every entry.
+- **`--prune`** does *not* delete repository directories. Removing a repo from `gaal.yaml` simply leaves it on disk; remove it manually if you don't want it.
+
+<Warning>
+gaal owns the contents of each repository directory it manages. Local edits inside a managed path are at risk of being overwritten on the next sync. Treat managed paths as read-only checkouts.
+</Warning>
+
+## Authentication
+
+Authentication is delegated to the underlying VCS:
+
+- **HTTPS Git**, credentials come from your `~/.netrc` or your Git credential helper.
+- **SSH Git**, your SSH agent and `~/.ssh/config` are used as-is.
+- **Hg/SVN/Bzr**, same as if you ran `hg clone`, `svn checkout`, or `bzr branch` yourself.
+- **tar/zip**, gaal sends a plain `GET`. Use a pre-signed URL or a `~/.netrc` entry for the host.
+
+gaal never stores credentials.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure repositories" icon="gear" href="/configure/repositories" />
+  <Card title="Pinning versions" icon="thumbtack" href="/workflows/pinning" />
+  <Card title="Schema: repositories" icon="file-code" href="/schema/repositories" />
+  <Card title="gaal sync" icon="arrows-rotate" href="/cli/sync" />
+</CardGroup>
