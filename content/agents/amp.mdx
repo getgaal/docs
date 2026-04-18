@@ -1,0 +1,43 @@
+---
+title: "Amp"
+description: "Sourcegraph's agentic coding tool."
+---
+
+[Amp](https://ampcode.com) is Sourcegraph's agentic coding tool. Project skills use the vendor-neutral `.agents/skills` convention; global skills live under `~/.config/agents/skills`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.agents/skills` (generic fallback) |
+| Global skills | `~/.config/agents/skills` |
+| MCP config | `~/.config/amp/settings.json` |
+| Audit search (project) | `.agents/skills`, `.github/skills`, `.claude/skills` |
+| Audit search (global) | `~/.config/agents/skills`, `~/.agents/skills`, `~/.copilot/skills`, `~/.claude/skills` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [amp]
+    global: false
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.config/amp/settings.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

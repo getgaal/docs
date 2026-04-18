@@ -1,0 +1,69 @@
+---
+title: "gaal schema"
+description: "Print or write the JSON Schema for gaal.yaml."
+---
+
+```bash
+gaal schema [flags]
+```
+
+Prints (or writes to a file) the JSON Schema (draft-07) that describes every field of a valid `gaal.yaml`. Use it for IDE auto-completion, inline validation, and for feeding to LLMs that need the structure.
+
+## Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-f`, `--file <path>` | stdout | Write the schema to a file instead of stdout. |
+
+Plus all [global flags](/cli/overview#global-flags).
+
+## Examples
+
+```bash
+# Print to stdout
+gaal schema
+
+# Write to a file
+gaal schema -f schema.json
+
+# Pipe straight into a downstream tool
+gaal schema | jq '.properties.repositories'
+```
+
+## VS Code integration
+
+The gaal repository ships a workspace `settings.json` that maps `schema.json` to every `*.gaal.yaml` file. Run `gaal schema -f schema.json` once and YAML auto-completion + inline validation light up automatically.
+
+For a standalone project, add this to `.vscode/settings.json`:
+
+```json
+{
+  "yaml.schemas": {
+    "schema.json": ["gaal.yaml", "*.gaal.yaml"]
+  }
+}
+```
+
+(Requires the [YAML extension by Red Hat](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml).)
+
+## JetBrains (GoLand / IntelliJ / PyCharm) integration
+
+1. Open Settings → **Languages & Frameworks → Schemas and DTDs → JSON Schema Mappings**.
+2. Click **+** and add `schema.json` (or the URL where you host it).
+3. Set the file pattern to `gaal.yaml` (and any other patterns you use).
+
+## Programmatic validation
+
+The schema is the source of truth for what `gaal sync` accepts. Use it in your own validators, CI checks, or LLM JSON-mode prompts:
+
+```bash
+gaal schema -f /tmp/gaal.schema.json
+ajv validate -s /tmp/gaal.schema.json -d gaal.yaml
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="The gaal.yaml file" icon="file-code" href="/concepts/gaal-yaml" />
+  <Card title="Schema reference" icon="book" href="/schema/overview" />
+</CardGroup>

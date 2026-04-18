@@ -1,0 +1,116 @@
+---
+title: "Sync once vs. continuous service"
+description: "Pick the right mode for laptops, dev workstations, and CI."
+---
+
+`gaal sync` runs the full reconciliation pipeline once and exits. `gaal sync --service` keeps the same pipeline running in a loop. Both produce identical state on disk, pick the one that matches how you use the machine.
+
+## One-shot sync (the default)
+
+```bash
+gaal sync
+```
+
+Runs the full pipeline: audit, plan, apply. Exits when finished.
+
+Use this when:
+
+- You want explicit control over when reconciliation happens.
+- You're scripting in a Makefile, post-merge hook, or CI job.
+- You're on a laptop where a background process would just waste battery.
+
+## Continuous service
+
+```bash
+gaal sync --service --interval 10m
+```
+
+Runs sync, sleeps, runs sync, sleeps. Forever. Catches `SIGTERM` and `Ctrl-C` cleanly.
+
+`--interval` accepts any Go duration string: `30s`, `5m`, `2h`. Default is `5m`.
+
+Use this when:
+
+- You're on a long-lived dev workstation and want skills/MCP entries to stay in sync as you edit `gaal.yaml`.
+- You want a system service that keeps a fleet of machines aligned with a config file pulled from a shared dotfiles repo (paired with a `git pull` cron).
+
+### Incompatible with `--service`
+
+| Flag | Why |
+|------|-----|
+| `--dry-run` | A dry-run service loop is meaningless. |
+| `--prune` | Destructive operations should never be in a continuous loop. |
+
+## Running sync as a system service
+
+### systemd (Linux)
+
+```ini
+# ~/.config/systemd/user/gaal-sync.service
+[Unit]
+Description=gaal sync loop
+
+[Service]
+ExecStart=%h/.local/bin/gaal sync --service --interval 5m
+Restart=always
+
+[Install]
+WantedBy=default.target
+```
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now gaal-sync.service
+```
+
+### launchd (macOS)
+
+```xml
+<!-- ~/Library/LaunchAgents/com.gaal.sync.plist -->
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+  <dict>
+    <key>Label</key><string>com.gaal.sync</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/Users/you/.local/bin/gaal</string>
+      <string>sync</string>
+      <string>--service</string>
+      <string>--interval</string>
+      <string>5m</string>
+    </array>
+    <key>KeepAlive</key><true/>
+    <key>RunAtLoad</key><true/>
+  </dict>
+</plist>
+```
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.gaal.sync.plist
+```
+
+### Periodic via cron
+
+If a long-lived process feels like overkill, fire one-shot syncs from cron:
+
+```cron
+*/15 * * * * /home/you/.local/bin/gaal sync >> /tmp/gaal.log 2>&1
+```
+
+## Logging
+
+Pair service mode with a JSON log file for observability:
+
+```bash
+gaal sync --service --interval 5m --log-file /var/log/gaal.json
+```
+
+Each cycle writes structured events you can ship into the log pipeline of your choice.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Dry-run" icon="eye" href="/workflows/dry-run" />
+  <Card title="Pruning" icon="scissors" href="/workflows/pruning" />
+  <Card title="gaal sync" icon="arrows-rotate" href="/cli/sync" />
+</CardGroup>

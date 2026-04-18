@@ -1,0 +1,64 @@
+---
+title: "gaal audit"
+description: "Read-only scan of skills and MCP entries already on this machine."
+---
+
+```bash
+gaal audit [flags]
+```
+
+Scans the filesystem for skills and MCP server entries that already exist, without writing anything. The output is the input `gaal init --import-all` uses to build a `gaal.yaml`, so running `audit` first is a great way to preview what an import would capture.
+
+## What it scans
+
+For each agent in the registry:
+
+- **Project skill directories**, relative paths configured in the registry (e.g. `.claude/skills`, `.agents/skills`, `.github/skills`).
+- **Global skill directories**, home-relative paths (e.g. `~/.claude/skills`, `~/.cursor/skills`).
+- **Package-manager paths**, vendor-specific extension directories (e.g. `~/.cursor/extensions`, `~/.claude/plugins/cache`).
+- **MCP config files**, every target file the agent uses.
+
+## Flags
+
+Only the [global flags](/cli/overview#global-flags). `-o json` is useful for scripting.
+
+## Sample output
+
+```text
+$ gaal audit
+discovered:
+  skills (project)
+    .claude/skills/code-review     (claude-code)
+    .cursor/skills/test-writer     (cursor)
+  skills (global)
+    ~/.claude/skills/git-helper    (claude-code)
+    ~/.cursor/skills/refactor      (cursor)
+  skills (package manager)
+    ~/.claude/plugins/cache/extra-skill (claude-code)
+  mcps
+    ~/.config/claude/claude_desktop_config.json
+      filesystem, git, github
+    ~/.cursor/mcp.json
+      filesystem
+```
+
+## JSON output
+
+```bash
+gaal audit -o json
+```
+
+Returns the discovered skills and MCP entries as structured JSON.
+
+## What audit does NOT do
+
+- It doesn't write to `gaal.yaml`. Use `gaal init --import-all` for that.
+- It doesn't reach the network. All discovery is filesystem-only.
+- It doesn't read the contents of `SKILL.md` files, it only confirms the directory exists.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="gaal init" icon="play" href="/cli/init" />
+  <Card title="First-time setup" icon="rocket" href="/workflows/first-time-setup" />
+</CardGroup>

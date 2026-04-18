@@ -1,0 +1,131 @@
+---
+title: "Configure repositories"
+description: "Cookbook for the repositories: block of gaal.yaml."
+---
+
+This page is a working reference: every common shape you'd actually write under `repositories:`. For the conceptual model, see [Concepts → Repositories](/concepts/repositories).
+
+## Minimal git clone
+
+```yaml
+repositories:
+  src/gaal:
+    type: git
+    url: https://github.com/getgaal/gaal.git
+    version: main
+```
+
+## Pin to a tag
+
+```yaml
+repositories:
+  src/tools/my-lib:
+    type: git
+    url: https://github.com/example/my-lib.git
+    version: v2.1.0
+```
+
+## Pin to a commit
+
+```yaml
+repositories:
+  src/research/llm-paper:
+    type: git
+    url: https://github.com/example/llm-paper.git
+    version: a1b2c3d4e5f6789
+```
+
+## SSH origin
+
+```yaml
+repositories:
+  src/private/work:
+    type: git
+    url: git@github.com:acme/private-work.git
+    version: main
+```
+
+Authentication uses your local SSH agent.
+
+## Mercurial / Subversion / Bazaar
+
+```yaml
+repositories:
+  src/legacy/svn-tool:
+    type: svn
+    url: https://svn.example.com/repos/legacy/trunk
+    version: "1234"          # SVN revision
+
+  src/old/hg-tool:
+    type: hg
+    url: https://hg.example.com/old-tool
+    version: default
+
+  src/old/bzr-tool:
+    type: bzr
+    url: lp:my-project
+    version: "42"
+```
+
+These types require the matching system binary (`svn`, `hg`, `bzr`) on `$PATH`. Git uses a pure-Go backend with no system dependency.
+
+## Tarball release
+
+```yaml
+repositories:
+  src/data/dataset:
+    type: tar
+    url: https://example.com/releases/dataset-2024.tar.gz
+    version: dataset-2024     # strip-prefix during extraction
+```
+
+`version:` for `tar` and `zip` is a **strip-prefix** string, gaal removes that leading directory during extraction so the contents land cleanly under `src/data/dataset/`.
+
+## Zip archive
+
+```yaml
+repositories:
+  vendor/sdk:
+    type: zip
+    url: https://example.com/sdk-v3.zip
+    version: sdk-v3
+```
+
+## Multiple repos at once
+
+```yaml
+repositories:
+  src/gaal:
+    type: git
+    url: https://github.com/getgaal/gaal.git
+    version: main
+
+  src/anthropics-skills:
+    type: git
+    url: https://github.com/anthropics/skills.git
+    version: main
+
+  vendor/mcp-servers:
+    type: git
+    url: https://github.com/modelcontextprotocol/servers.git
+    version: main
+```
+
+## Behaviour at sync time
+
+- A first sync clones (or extracts) each entry into its destination path.
+- A subsequent sync fast-forwards or re-extracts based on `version:` and the remote state.
+- `--dry-run` reports `+ clone`, `~ update`, or `= unchanged` per entry.
+- Removing a repository entry from `gaal.yaml` does **not** delete its directory, `--prune` ignores repositories.
+
+<Warning>
+gaal owns the contents of each repository directory. Don't make local edits inside a managed path, they'll be lost on the next update. Use a separate working clone for development.
+</Warning>
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Concepts: repositories" icon="folder-tree" href="/concepts/repositories" />
+  <Card title="Pinning versions" icon="thumbtack" href="/workflows/pinning" />
+  <Card title="Schema: repositories" icon="file-code" href="/schema/repositories" />
+</CardGroup>

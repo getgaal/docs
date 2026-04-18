@@ -24,58 +24,122 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Docs",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get started",
             "pages": [
-              "index",
+              "introduction",
+              "install",
               "quickstart",
-              "development"
+              "how-gaal-works"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "concepts/gaal-yaml",
+              "concepts/repositories",
+              "concepts/skills",
+              "concepts/mcp-servers",
+              "concepts/agents-and-renderers",
+              "concepts/scopes",
+              "concepts/telemetry"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Configure",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+              "configure/repositories",
+              "configure/skills",
+              "configure/mcp-servers",
+              "configure/custom-agents",
+              "configure/environment-and-secrets"
             ]
           },
           {
-            "group": "AI tools",
+            "group": "Workflows",
             "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "workflows/first-time-setup",
+              "workflows/sync-vs-service",
+              "workflows/dry-run",
+              "workflows/pruning",
+              "workflows/pinning",
+              "workflows/sandbox-mode",
+              "workflows/sharing-across-machines"
+            ]
+          },
+          {
+            "group": "Agent integrations",
+            "pages": [
+              "agents/overview",
+              "agents/claude-code",
+              "agents/cursor",
+              "agents/codex",
+              "agents/github-copilot",
+              "agents/windsurf",
+              "agents/continue",
+              "agents/gemini-cli",
+              "agents/goose",
+              "agents/cline",
+              "agents/roo",
+              "agents/augment",
+              "agents/opencode",
+              "agents/openhands",
+              "agents/trae",
+              "agents/kilo",
+              "agents/kiro-cli",
+              "agents/amp",
+              "agents/zencoder",
+              "agents/antigravity",
+              "agents/warp",
+              "agents/generic"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "troubleshooting/doctor",
+              "troubleshooting/common-errors",
+              "troubleshooting/faq"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "CLI reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "CLI reference",
             "pages": [
-              "api-reference/introduction"
+              "cli/overview",
+              "cli/sync",
+              "cli/status",
+              "cli/agents",
+              "cli/info",
+              "cli/init",
+              "cli/audit",
+              "cli/doctor",
+              "cli/migrate",
+              "cli/schema",
+              "cli/version",
+              "cli/completion"
             ]
-          },
+          }
+        ]
+      },
+      {
+        "tab": "Schema reference",
+        "groups": [
           {
-            "group": "Endpoint examples",
+            "group": "gaal.yaml schema",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "schema/overview",
+              "schema/schema-version",
+              "schema/repositories",
+              "schema/skills",
+              "schema/mcps",
+              "schema/telemetry"
             ]
           }
         ]

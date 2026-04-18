@@ -1,0 +1,86 @@
+---
+title: "Custom agents"
+description: "Teach gaal about an agent it doesn't ship with yet."
+---
+
+If you use a coding agent that isn't in the [built-in registry](/agents/overview), you can extend the registry with a custom entry. gaal will then treat it like any first-class agent, `agents: ["*"]` will install into it, `gaal agents` will list it, `gaal audit` will scan its skill directories.
+
+## Where to put the file
+
+| OS | Path |
+|----|------|
+| Linux | `$XDG_CONFIG_HOME/gaal/agents.yaml` (defaults to `~/.config/gaal/agents.yaml`) |
+| macOS | `$XDG_CONFIG_HOME/gaal/agents.yaml` (defaults to `~/.config/gaal/agents.yaml`) |
+| Windows | `%AppData%\gaal\agents.yaml` |
+
+Custom entries **extend** the built-in list. They cannot override built-in entries, if you and gaal both define `cursor`, the built-in wins.
+
+## Minimal entry
+
+```yaml
+agents:
+  my-agent:
+    project_skills_dir: .my-agent/skills
+    global_skills_dir: ~/.my-agent/skills
+    project_mcp_config_file: ~/.my-agent/mcp.json
+```
+
+That's enough to make `agents: [my-agent]` work in `gaal.yaml`.
+
+## Full entry
+
+```yaml
+agents:
+  my-agent:
+    project_skills_dir: .my-agent/skills          # relative path, no ".."
+    global_skills_dir: ~/.my-agent/skills         # must start with ~/
+    project_mcp_config_file: ~/.my-agent/mcp.json # empty string if unsupported
+
+    # Audit-only fields. gaal audit scans these for existing skills.
+    project_skills_search:
+      - .my-agent/skills
+      - .agents/skills
+    global_skills_search:
+      - ~/.my-agent/skills
+      - ~/.agents/skills
+    pm_skills_search:
+      - ~/.my-agent/extensions
+```
+
+## Field reference
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `project_skills_dir` | yes | Skills directory relative to the project root. Must be relative; no `..`. Empty string when the agent uses generic conventions. |
+| `global_skills_dir` | yes | Skills directory under the user's home. Must start with `~/`. Empty string when the agent uses generic conventions. |
+| `project_mcp_config_file` | yes | Path to the agent's MCP server config file. Use `~/`-prefix. Empty string if the agent doesn't support MCP. |
+| `project_skills_search` | no | Project-relative directories `gaal audit` scans (one level deep). Defaults to `[project_skills_dir]`. |
+| `global_skills_search` | no | Home-relative directories `gaal audit` scans (one level deep). Defaults to `[global_skills_dir]`. |
+| `pm_skills_search` | no | Home-relative directories belonging to the agent's package manager. Scanned recursively. |
+| `supports_generic_project` | no | When `true`, the agent installs project skills via the shared `.agents/skills` directory. |
+| `supports_generic_global` | no | When `true`, the agent installs global skills via the shared `~/.agents/skills` directory. |
+
+## Verifying the entry
+
+After saving the file, list agents:
+
+```bash
+$ gaal agents
+NAME             INSTALLED  PROJECT_SKILLS    GLOBAL_SKILLS         MCP_CONFIG
+…
+my-agent         no         .my-agent/skills  ~/.my-agent/skills    ~/.my-agent/mcp.json
+```
+
+`gaal agents my-agent` shows the detailed view. `gaal audit` will pick up any existing skill directories matching the entry.
+
+## Asking for built-in support
+
+If the agent is publicly available and you'd like it added to the built-in registry, open an issue or PR at [github.com/getgaal/gaal](https://github.com/getgaal/gaal), the registry file lives at `internal/core/agent/agents.yaml`.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Agents & renderers" icon="robot" href="/concepts/agents-and-renderers" />
+  <Card title="Agent integrations" icon="puzzle-piece" href="/agents/overview" />
+  <Card title="gaal agents" icon="terminal" href="/cli/agents" />
+</CardGroup>

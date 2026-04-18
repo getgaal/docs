@@ -1,0 +1,68 @@
+---
+title: "telemetry"
+description: "Opt-in anonymous usage telemetry. Off by default."
+---
+
+```yaml
+telemetry: <bool>
+```
+
+## Type
+
+`bool`
+
+## Required
+
+No. Defaults to `false`. gaal collects nothing unless this is explicitly set to `true`.
+
+## Scope restriction
+
+This field is **only** honoured in:
+
+- The user-scope file: `~/.config/gaal/config.yaml` (or `$XDG_CONFIG_HOME/gaal/config.yaml` / `%AppData%\gaal\config.yaml`).
+- The system-scope file: `/etc/gaal/config.yaml`.
+
+A workspace `gaal.yaml` that sets `telemetry:` is **ignored** with a warning. This rule prevents a checked-in repo file from opting contributors into telemetry.
+
+See [Scopes](/concepts/scopes) for the full restriction policy.
+
+## What's collected when enabled
+
+Per command invocation:
+
+- Command name (`sync`, `doctor`, …).
+- Exit code class (`ok`, `warning`, `error`).
+- gaal version.
+- OS family (`linux`, `darwin`, `windows`).
+- A randomly generated, locally stored install ID.
+
+No file paths, no skill names, no MCP target paths, no URLs from your config.
+
+See [Concepts → Telemetry](/concepts/telemetry) and the [Privacy Policy](https://github.com/getgaal/gaal/blob/main/PRIVACY_POLICY.md) for the complete description.
+
+## Examples
+
+```yaml
+# ~/.config/gaal/config.yaml
+telemetry: true
+```
+
+```yaml
+# ~/.config/gaal/config.yaml
+telemetry: false
+```
+
+## Verifying
+
+```bash
+$ gaal doctor
+…
+✓ telemetry: disabled (per ~/.config/gaal/config.yaml)
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Concepts: Telemetry" icon="chart-line" href="/concepts/telemetry" />
+  <Card title="Scopes" icon="layer-group" href="/concepts/scopes" />
+</CardGroup>

@@ -1,0 +1,100 @@
+---
+title: "skills"
+description: "SKILL.md collections to install per agent."
+---
+
+```yaml
+skills:
+  - source: <string>
+    agents: <[string] | ["*"]>
+    global: <bool>          # optional, default false
+    select: <[string]>      # optional
+```
+
+## Type
+
+`array[SkillEntry]`
+
+## Required
+
+No. Omit `skills:` if you have nothing to install.
+
+## Entry fields
+
+### `source`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `source` | string | yes |
+
+Where the skills come from. Accepts:
+
+| Format | Example |
+|--------|---------|
+| GitHub shorthand | `anthropics/skills` |
+| Full HTTPS URL | `https://github.com/anthropics/skills` |
+| Git SSH URL | `git@github.com:anthropics/skills.git` |
+| Local path | `./company-skills` or `~/my-skills` |
+
+The source can contain one or many skills. Each top-level subdirectory containing a `SKILL.md` is one skill.
+
+### `agents`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `agents` | array of strings | yes |
+
+Either a list of registry names (`[claude-code, cursor, codex]`) or the wildcard `["*"]`.
+
+`["*"]` resolves at sync time to **agents currently detected on this machine**. Use `gaal sync --force` to expand it to every registered agent regardless of detection.
+
+### `global`
+
+| Field | Type | Required | Default |
+|-------|------|----------|---------|
+| `global` | bool | no | `false` |
+
+| Value | Install layout |
+|-------|----------------|
+| `false` | `./.<agent>/skills/<name>` (per-project) |
+| `true` | `~/.<agent>/skills/<name>` (per-user) |
+
+### `select`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `select` | array of strings | no |
+
+Names (matching subdirectory names in the source) of specific skills to install. Empty or omitted = install everything in the source.
+
+## Example
+
+```yaml
+skills:
+  - source: anthropics/skills
+    agents: ["*"]
+    global: false
+
+  - source: vercel-labs/agent-skills
+    agents: [claude-code, cursor]
+    select: [test-writer, code-reviewer]
+    global: true
+
+  - source: ./company-skills
+    agents: [claude-code, cursor]
+    global: false
+```
+
+## Behaviour
+
+- Sources are fetched once per sync and reused across all targeted agents.
+- Skills already at the right version are reported `= unchanged`.
+- Skills no longer in the config are left alone unless you pass `--prune`.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Concepts: Skills" icon="brain" href="/concepts/skills" />
+  <Card title="Configure skills" icon="gear" href="/configure/skills" />
+  <Card title="Agent integrations" icon="robot" href="/agents/overview" />
+</CardGroup>

@@ -1,0 +1,43 @@
+---
+title: "Warp"
+description: "AI-first terminal."
+---
+
+[Warp](https://warp.dev) is an AI-first terminal. Both project and global skills use the vendor-neutral `.agents/skills` and `~/.agents/skills` conventions; MCP config lives under `~/.warp/launch_configurations/mcp.json`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.agents/skills` (generic fallback) |
+| Global skills | `~/.agents/skills` (generic fallback) |
+| MCP config | `~/.warp/launch_configurations/mcp.json` |
+| Audit search (project) | `.agents/skills`, `.github/skills`, `.claude/skills` |
+| Audit search (global) | `~/.agents/skills`, `~/.warp/skills`, `~/.copilot/skills` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [warp]
+    global: true       # → ~/.agents/skills (shared)
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.warp/launch_configurations/mcp.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

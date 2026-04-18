@@ -1,0 +1,109 @@
+---
+title: "mcps"
+description: "MCP server entries upserted into agent JSON configs."
+---
+
+```yaml
+mcps:
+  - name: <string>
+    target: <path>
+    source: <url>           # mutually exclusive with inline
+    inline:                 # mutually exclusive with source
+      command: <string>
+      args: <[string]>
+      env: <map[string,string]>
+```
+
+## Type
+
+`array[McpEntry]`
+
+## Required
+
+No. Omit `mcps:` if you don't manage any.
+
+## Entry fields
+
+### `name`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `name` | string | yes |
+
+The identifier the entry will be upserted under inside the target's `mcpServers` object.
+
+### `target`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `target` | string | yes |
+
+Path to the JSON file gaal will upsert into. Absolute or `~/`-prefixed. Common values:
+
+| Agent | Target |
+|-------|--------|
+| Claude Desktop | `~/.config/claude/claude_desktop_config.json` |
+| Cursor | `~/.cursor/mcp.json` |
+| Codex | `~/.codex/mcp.json` |
+| Windsurf | `~/.codeium/windsurf/mcp_settings.json` |
+| Continue | `~/.continue/config.json` |
+| VS Code (Copilot, Cline, Roo) | `~/.vscode/settings.json` |
+
+The full list is on each [agent integration page](/agents/overview).
+
+### `source`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `source` | URL | conditionally |
+
+A URL returning a JSON document with an `mcpServers` object. gaal downloads the file and merges the entry named `name` into the target.
+
+Mutually exclusive with `inline`.
+
+### `inline`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `inline` | object | conditionally |
+
+The MCP server spec, written directly in `gaal.yaml`. Fields:
+
+| Subfield | Type | Required |
+|----------|------|----------|
+| `command` | string | yes |
+| `args` | array of strings | no |
+| `env` | map[string]string | no |
+
+Mutually exclusive with `source`. Exactly one of `source` or `inline` must be set per entry.
+
+## Example
+
+```yaml
+mcps:
+  - name: filesystem
+    target: ~/.config/claude/claude_desktop_config.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+
+  - name: github
+    source: https://raw.githubusercontent.com/github/mcp-servers/main/config.json
+    target: ~/.config/claude/claude_desktop_config.json
+```
+
+## Behaviour
+
+- gaal upserts under the `mcpServers` object of the target file.
+- Other top-level keys in the target file are preserved.
+- Other entries inside `mcpServers` that gaal didn't author are preserved.
+- Removing an entry from `gaal.yaml` does **not** remove it from the target unless you pass `--prune`.
+- gaal does **not** expand `${VAR}` references in `args:` or `env:`. The agent process resolves them when launching the server.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Concepts: MCP servers" icon="plug" href="/concepts/mcp-servers" />
+  <Card title="Configure MCP servers" icon="gear" href="/configure/mcp-servers" />
+  <Card title="Environment & secrets" icon="key" href="/configure/environment-and-secrets" />
+</CardGroup>

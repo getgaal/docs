@@ -1,0 +1,88 @@
+---
+title: "Using gaal doctor"
+description: "The first command to run when something looks off."
+---
+
+`gaal doctor` is the diagnostic command. Run it any time gaal isn't behaving the way you expect, it's faster than reading the source.
+
+## What doctor checks
+
+```bash
+$ gaal doctor
+config:
+  ✓ ./gaal.yaml parses against schema 1
+  ✓ no scope-restricted fields in workspace
+sources:
+  ✓ anthropics/skills          reachable
+  ✓ vercel-labs/agent-skills   reachable
+mcps:
+  ✓ ~/.config/claude/claude_desktop_config.json   writable
+  ✓ ~/.cursor/mcp.json                            writable
+agents:
+  installed: claude-code, cursor, codex
+  not installed: github-copilot, windsurf
+telemetry:
+  ✓ disabled (per ~/.config/gaal/config.yaml)
+
+3 agents installed, 0 misconfigured
+```
+
+In order, doctor checks:
+
+1. **Config validity**, does `gaal.yaml` parse? Does it conform to the schema? Are scope-restricted fields used in the wrong scope?
+2. **Source reachability**, every `skills[*].source` and every `mcps[*].source` URL is contacted (HEAD only, no download).
+3. **MCP target writability**, every `mcps[*].target` file is checked for read/write permission. Missing files are OK; the target will be created on sync.
+4. **Agent installation**, for each agent in the registry, doctor reports whether gaal detects it on this machine.
+5. **Telemetry status**, opt-in / opt-out, plus the source file the value came from.
+
+## Exit codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | Everything passed. |
+| `1` | Warnings only, gaal will function, but something is suboptimal (e.g. an unreachable optional source). |
+| `2` | Errors, gaal cannot operate as configured. |
+
+```bash
+gaal doctor && echo "ready to sync"
+```
+
+## Useful flags
+
+```bash
+gaal doctor --offline      # skip network reachability checks
+gaal doctor --no-upsell    # suppress the Community Edition graduation message
+gaal doctor -o json        # machine-readable output
+```
+
+`--offline` is what you want in CI environments without internet access, or when running over a metered connection.
+
+## Reading doctor output
+
+The output is grouped by check category. Within each category, lines are prefixed with:
+
+| Prefix | Severity |
+|--------|----------|
+| `✓` | Passed. |
+| `!` | Warning, not blocking, but worth attention. |
+| `✗` | Error, blocks sync. |
+
+Errors always come with a hint about how to fix them.
+
+## Common things doctor catches
+
+- A workspace `gaal.yaml` trying to set `telemetry:`.
+- An `mcps[].target` whose parent directory doesn't exist *and* isn't writable by the current user.
+- A `skills[].source` URL that 404s or requires authentication you haven't set up.
+- An MCP target file that's not valid JSON (someone hand-edited it incorrectly).
+- A custom agents file at `~/.config/gaal/agents.yaml` that overrides a built-in entry.
+
+For step-by-step fixes to specific errors, see [Common errors](/troubleshooting/common-errors).
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Common errors" icon="circle-exclamation" href="/troubleshooting/common-errors" />
+  <Card title="FAQ" icon="circle-question" href="/troubleshooting/faq" />
+  <Card title="gaal doctor reference" icon="terminal" href="/cli/doctor" />
+</CardGroup>

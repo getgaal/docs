@@ -1,0 +1,43 @@
+---
+title: "Continue"
+description: "Open-source coding assistant for VS Code and JetBrains."
+---
+
+[Continue](https://continue.dev) is an open-source coding assistant. Skills live under `.continue/skills`; MCP config lives under `~/.continue/config.json`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.continue/skills` |
+| Global skills | `~/.continue/skills` |
+| MCP config | `~/.continue/config.json` |
+| Audit search (project) | `.continue/skills`, `.agents/skills`, `.github/skills`, `.claude/skills` |
+| Audit search (global) | `~/.continue/skills`, `~/.agents/skills`, `~/.copilot/skills` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [continue]
+    global: true
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.continue/config.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

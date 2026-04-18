@@ -1,0 +1,43 @@
+---
+title: "Augment"
+description: "Augment Code AI agent."
+---
+
+[Augment](https://augmentcode.com) is an AI coding agent. Skills live under `.augment/skills`; MCP config lives under `~/.augment/settings.json`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.augment/skills` |
+| Global skills | `~/.augment/skills` |
+| MCP config | `~/.augment/settings.json` |
+| Audit search (project) | `.augment/skills`, `.agents/skills`, `.github/skills`, `.claude/skills` |
+| Audit search (global) | `~/.augment/skills`, `~/.agents/skills`, `~/.copilot/skills` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [augment]
+    global: false
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.augment/settings.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

@@ -1,0 +1,53 @@
+---
+title: "Schema overview"
+description: "The shape of gaal.yaml, key by key."
+---
+
+This tab is the formal reference for `gaal.yaml`. For prose explanations and design rationale, see [Concepts → The gaal.yaml file](/concepts/gaal-yaml). For working examples, see the [Configure](/configure/repositories) section.
+
+## Top-level keys
+
+| Key | Type | Required | Page |
+|-----|------|----------|------|
+| `schema` | integer | recommended | [Schema version](/schema/schema-version) |
+| `repositories` | map | no | [Repositories](/schema/repositories) |
+| `skills` | array | no | [Skills](/schema/skills) |
+| `mcps` | array | no | [MCPs](/schema/mcps) |
+| `telemetry` | bool | no | [Telemetry](/schema/telemetry) |
+
+## Generating the JSON Schema
+
+`gaal schema` writes the canonical JSON Schema (draft-07) for `gaal.yaml`:
+
+```bash
+gaal schema -f schema.json
+```
+
+Drop the file into your editor's JSON-Schema mappings to get inline validation and auto-completion as you type. See [`gaal schema`](/cli/schema) for IDE setup.
+
+## Validation
+
+Two ways to validate a `gaal.yaml`:
+
+```bash
+# In gaal itself
+gaal doctor
+```
+
+```bash
+# Against the schema with any JSON-Schema validator
+gaal schema -f schema.json
+ajv validate -s schema.json -d gaal.yaml
+```
+
+## Stability
+
+The `schema` field is stable forever. gaal reads `schema: 1` files now and will continue to read them. When breaking changes happen they will use `schema: 2` with a documented migration path, older files will keep working.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="The gaal.yaml file" icon="file-code" href="/concepts/gaal-yaml" />
+  <Card title="gaal schema" icon="terminal" href="/cli/schema" />
+  <Card title="gaal doctor" icon="stethoscope" href="/cli/doctor" />
+</CardGroup>

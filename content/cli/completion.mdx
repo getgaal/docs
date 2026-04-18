@@ -1,0 +1,73 @@
+---
+title: "gaal completion"
+description: "Generate shell completion scripts for bash, zsh, fish, and PowerShell."
+---
+
+```bash
+gaal completion <bash|zsh|fish|powershell>
+```
+
+Prints a completion script for the requested shell to stdout. Source it into your current session, or write it to your shell's completion directory for a permanent install.
+
+## Bash
+
+**Current session:**
+
+```bash
+source <(gaal completion bash)
+```
+
+**Permanent (add to `~/.bashrc`):**
+
+```bash
+gaal completion bash > ~/.local/share/bash-completion/completions/gaal
+```
+
+## Zsh
+
+**Current session:**
+
+```zsh
+source <(gaal completion zsh)
+```
+
+**Permanent:**
+
+```zsh
+gaal completion zsh > "${fpath[1]}/_gaal"
+```
+
+If your `${fpath[1]}` isn't writable, pick another writable directory on your `fpath` and place the file there.
+
+## Fish
+
+**Current session:**
+
+```fish
+gaal completion fish | source
+```
+
+**Permanent:**
+
+```fish
+gaal completion fish > ~/.config/fish/completions/gaal.fish
+```
+
+## PowerShell
+
+```powershell
+gaal completion powershell | Out-String | Invoke-Expression
+```
+
+To make it permanent, add the line to your PowerShell `$PROFILE`.
+
+## Verifying
+
+After installing, open a new shell and start typing `gaal s<Tab>`, you should see `status sync` come up. If completion doesn't fire, your shell may need a restart, or your completion directory may not be on the lookup path.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="CLI overview" icon="terminal" href="/cli/overview" />
+  <Card title="Install" icon="download" href="/install" />
+</CardGroup>

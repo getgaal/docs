@@ -1,0 +1,50 @@
+---
+title: "Cursor"
+description: "AI-first code editor with native MCP support."
+---
+
+[Cursor](https://cursor.com) is an AI-first code editor. Project skills use the vendor-neutral `.agents/skills` convention; global skills live under `~/.cursor/skills`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.agents/skills` (generic fallback) |
+| Global skills | `~/.cursor/skills` |
+| MCP config | `~/.cursor/mcp.json` |
+| Audit search (project) | `.agents/skills`, `.github/skills`, `.claude/skills` |
+| Audit search (global) | `~/.cursor/skills`, `~/.agents/skills`, `~/.copilot/skills`, `~/.claude/skills` |
+| Package-manager search | `~/.cursor/extensions` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: vercel-labs/agent-skills
+    agents: [cursor]
+    global: true       # → ~/.cursor/skills
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.cursor/mcp.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+## Detecting installation
+
+```bash
+gaal agents cursor
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

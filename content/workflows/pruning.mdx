@@ -1,0 +1,62 @@
+---
+title: "Pruning orphaned resources"
+description: "Remove skills and MCP entries gaal used to manage but no longer does."
+---
+
+Removing an entry from `gaal.yaml` doesn't, by default, delete what gaal previously installed. The leftover files are called **orphans**. `gaal sync --prune` cleans them up.
+
+Pruning is opt-in because the safe default is "leave alone what I didn't author this run." If you removed a skill from `gaal.yaml` by accident, you don't want gaal to delete it before you notice.
+
+## What gets pruned
+
+| Resource | Pruned? | Notes |
+|----------|---------|-------|
+| **Skills** | Yes | Skill directories gaal previously installed and that no longer have a matching `skills[]` entry. |
+| **MCP server entries** | Yes | Inside each managed target file, `mcpServers` keys gaal previously upserted that are no longer in `mcps[]`. |
+| **Repositories** | No | gaal never deletes repository directories. Remove them by hand if you want them gone. |
+| **Other JSON keys in MCP target files** | No | `--prune` only touches keys gaal could have authored. |
+
+## Always preview a prune
+
+```bash
+gaal sync --prune --dry-run
+```
+
+The plan marks pruned items with `-`:
+
+```text
+plan:
+  skills
+    - remove  old-reviewer        ← claude-code (was managed by gaal)
+  mcps
+    - remove  legacy-server       ← ~/.config/claude/claude_desktop_config.json
+```
+
+## Apply the prune
+
+```bash
+gaal sync --prune
+```
+
+## Incompatible with `--service`
+
+```bash
+$ gaal sync --service --prune
+error: --prune and --service are incompatible: use one-shot mode for destructive operations
+```
+
+Destructive operations don't belong in an unattended loop. Run prune as a one-shot after editing `gaal.yaml`.
+
+## How gaal knows what it managed
+
+gaal records what it installed each cycle. A skill or MCP entry is considered gaal-managed if a previous sync wrote it. When you remove it from `gaal.yaml` and run `--prune`, that record is what authorises the deletion.
+
+If you delete the gaal state file by hand, gaal forgets what it managed and `--prune` becomes a no-op until you sync again.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Dry-run" icon="eye" href="/workflows/dry-run" />
+  <Card title="gaal sync" icon="arrows-rotate" href="/cli/sync" />
+  <Card title="MCP servers" icon="plug" href="/concepts/mcp-servers" />
+</CardGroup>

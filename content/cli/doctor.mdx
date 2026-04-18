@@ -1,0 +1,70 @@
+---
+title: "gaal doctor"
+description: "Health check on configuration, sources, targets, and agents."
+---
+
+```bash
+gaal doctor [flags]
+```
+
+Validates `gaal.yaml`, checks that every source is reachable, verifies every MCP target is writable, and reports agent and telemetry status. Run it any time gaal is misbehaving, and as a CI gate.
+
+## Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--offline` | off | Skip network reachability checks. |
+| `--no-upsell` | off | Suppress the Community Edition graduation message. |
+
+Plus all [global flags](/cli/overview#global-flags).
+
+## Exit codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | All checks passed. |
+| `1` | Warnings only, gaal will function. |
+| `2` | Errors, gaal cannot operate as configured. |
+
+```bash
+gaal doctor && echo "ready to sync"
+```
+
+## Sample output
+
+```text
+$ gaal doctor
+config:
+  ✓ ./gaal.yaml parses against schema 1
+  ✓ no scope-restricted fields in workspace
+sources:
+  ✓ anthropics/skills          reachable
+  ✓ vercel-labs/agent-skills   reachable
+mcps:
+  ✓ ~/.config/claude/claude_desktop_config.json   writable
+  ✓ ~/.cursor/mcp.json                            writable
+agents:
+  installed: claude-code, cursor, codex
+  not installed: github-copilot, windsurf
+telemetry:
+  ✓ disabled (per ~/.config/gaal/config.yaml)
+
+3 agents installed, 0 misconfigured
+```
+
+## CI usage
+
+```yaml
+- run: gaal doctor --offline
+- run: gaal --sandbox "$RUNNER_TEMP/gaal-sb" sync --dry-run
+- run: gaal --sandbox "$RUNNER_TEMP/gaal-sb" sync
+```
+
+`--offline` is essential in air-gapped or rate-limited CI environments.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Using gaal doctor" icon="stethoscope" href="/troubleshooting/doctor" />
+  <Card title="Common errors" icon="circle-exclamation" href="/troubleshooting/common-errors" />
+</CardGroup>

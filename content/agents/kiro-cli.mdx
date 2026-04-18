@@ -1,0 +1,44 @@
+---
+title: "Kiro CLI"
+description: "AWS Kiro terminal coding agent."
+---
+
+[Kiro](https://kiro.dev) is AWS's AI IDE; the Kiro CLI is its terminal companion. Skills live under `.kiro/skills`; MCP config lives under `~/.kiro/settings/mcp.json`.
+
+## Paths
+
+| Resource | Path |
+|----------|------|
+| Project skills | `.kiro/skills` |
+| Global skills | `~/.kiro/skills` |
+| MCP config | `~/.kiro/settings/mcp.json` |
+| Audit search (project) | `.kiro/skills`, `.agents/skills`, `.github/skills` |
+| Audit search (global) | `~/.kiro/skills`, `~/.agents/skills`, `~/.copilot/skills` |
+| Package-manager search | `~/.kiro/extensions` |
+
+## Skills example
+
+```yaml gaal.yaml
+skills:
+  - source: anthropics/skills
+    agents: [kiro-cli]
+    global: false
+```
+
+## MCP example
+
+```yaml gaal.yaml
+mcps:
+  - name: filesystem
+    target: ~/.kiro/settings/mcp.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="brain" href="/configure/skills" />
+  <Card title="Configure MCP servers" icon="plug" href="/configure/mcp-servers" />
+</CardGroup>

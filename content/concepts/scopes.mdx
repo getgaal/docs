@@ -1,0 +1,72 @@
+---
+title: "Scopes"
+description: "Global, user, and workspace configuration, and how they merge."
+---
+
+gaal reads configuration from up to three files. They merge in a strict order so a workspace `gaal.yaml` checked into source control can never escalate machine-wide settings.
+
+## The three scopes
+
+| Priority | Scope | File |
+|----------|-------|------|
+| 1 (lowest) | System | `/etc/gaal/config.yaml` |
+| 2 | User | `$XDG_CONFIG_HOME/gaal/config.yaml` (defaults to `~/.config/gaal/config.yaml` on Linux/macOS, `%AppData%\gaal\config.yaml` on Windows) |
+| 3 (highest) | Workspace | `gaal.yaml` in the current working directory, or whatever `--config` points at |
+
+Higher-priority files override lower ones field by field.
+
+## What overrides what
+
+Most fields are merged with workspace winning over user winning over system:
+
+- `repositories`, workspace entries replace user entries with the same map key.
+- `skills`, the workspace list replaces the user list (no per-entry merging, pick one scope or the other).
+- `mcps`, same as skills: workspace list replaces user list.
+
+The exception is `telemetry`, which is **scope-restricted**.
+
+## Scope-restricted fields
+
+`telemetry` can be set in the user or system file but **not** in a workspace file. If a workspace `gaal.yaml` sets `telemetry:`, gaal ignores the value and prints a warning.
+
+This rule exists so that committing a `gaal.yaml` to a public repo can never opt anyone in to telemetry. Telemetry is a per-user choice, made explicitly on first run.
+
+## Where you'd put what
+
+| Setting | Best scope | Why |
+|---------|-----------|-----|
+| Personal helper skills installed everywhere | User | Survives across projects without committing a global file. |
+| Project-specific skills (codebase reviewer, custom MCP) | Workspace | Lives with the repo so contributors get the same tools. |
+| MCP servers shared across all your projects (filesystem, git) | User | Defined once, not per-project. |
+| Telemetry opt-in | User | The only place the value is honoured. |
+
+## Inspecting the merged config
+
+`gaal status` reports the resolved configuration as gaal sees it after merging. `gaal doctor` reports the source file for each entry.
+
+```bash
+$ gaal doctor
+config sources:
+  workspace  ./gaal.yaml
+  user       /home/you/.config/gaal/config.yaml
+  system     (none)
+```
+
+## Overriding the lookup
+
+Force a specific file with `--config`:
+
+```bash
+gaal --config /path/to/custom.yaml sync
+```
+
+When `--config` is set, the user and system files are still merged underneath unless the file you passed sets the same fields.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="The gaal.yaml file" icon="file-code" href="/concepts/gaal-yaml" />
+  <Card title="Telemetry" icon="chart-line" href="/concepts/telemetry" />
+  <Card title="Sharing across machines" icon="cloud-arrow-up" href="/workflows/sharing-across-machines" />
+  <Card title="gaal doctor" icon="stethoscope" href="/cli/doctor" />
+</CardGroup>

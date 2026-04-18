@@ -1,0 +1,81 @@
+---
+title: "gaal sync"
+description: "Reconcile every resource in gaal.yaml against the filesystem."
+---
+
+```bash
+gaal sync [flags]
+```
+
+`sync` is the workhorse. It runs the audit, computes the plan, and applies it: clones or updates repositories, installs or refreshes skills, and upserts MCP entries.
+
+## Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-s`, `--service` | off | Run as a continuous service (daemon mode). |
+| `-i`, `--interval <duration>` | `5m` | Polling interval in service mode (e.g. `30s`, `10m`, `2h`). |
+| `--dry-run` | off | Preview the plan without writing anything. See [Dry-run](/workflows/dry-run). |
+| `--prune` | off | Remove skills and MCP entries no longer in the config. See [Pruning](/workflows/pruning). |
+| `--force` | off | Install skills into all registered agents even when not detected. Applies only to `agents: ["*"]`. |
+
+Plus all [global flags](/cli/overview#global-flags).
+
+## Incompatible combinations
+
+| Combo | Result |
+|-------|--------|
+| `--dry-run --service` | Rejected, a dry-run service loop is meaningless. |
+| `--prune --service` | Rejected, destructive operations don't belong in a loop. |
+
+## Exit codes
+
+| Code | Mode | Meaning |
+|------|------|---------|
+| `0` | one-shot | Success, nothing to change or all changes applied. |
+| `0` | `--dry-run` | No changes pending. |
+| `1` | `--dry-run` | Changes are pending, run `gaal sync` to apply. |
+| `2` | any | Error during planning or apply. |
+
+## Examples
+
+```bash
+# One-shot sync
+gaal sync
+
+# Preview, no writes
+gaal sync --dry-run
+
+# Continuous loop, every 10 minutes
+gaal sync --service --interval 10m
+
+# Clean up orphans
+gaal sync --prune
+
+# Pre-stage a fresh machine, install for every registered agent
+gaal sync --force
+
+# Sandboxed sync (no risk to real files)
+gaal --sandbox /tmp/sb sync
+
+# Sync with structured logs
+gaal --log-file /var/log/gaal.json sync --service --interval 5m
+```
+
+## Sample output
+
+```text
+$ gaal sync
+✓ src/example          cloned
+✓ code-review          installed in claude-code, cursor
+✓ filesystem           upserted in claude_desktop_config.json
+sync complete in 1.2s
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Dry-run" icon="eye" href="/workflows/dry-run" />
+  <Card title="Pruning" icon="scissors" href="/workflows/pruning" />
+  <Card title="Sync vs. service mode" icon="repeat" href="/workflows/sync-vs-service" />
+</CardGroup>

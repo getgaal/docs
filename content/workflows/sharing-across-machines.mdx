@@ -1,0 +1,101 @@
+---
+title: "Sharing gaal.yaml across machines"
+description: "The dotfiles pattern: one repo, every machine in sync."
+---
+
+gaal is local-only today. There is no server, no central registry, no push-from-the-cloud. Cross-machine consistency is your responsibility, and the cleanest way to deliver it is the same way you sync your shell config: a dotfiles repo.
+
+## The pattern
+
+1. Create (or use your existing) **dotfiles repository**.
+2. Put your **user-scope** `config.yaml` in there.
+3. Optionally put per-project `gaal.yaml` files in the repos they describe.
+4. On every machine, after cloning, symlink the user file and run `gaal sync`.
+
+That's it.
+
+## Repo layout
+
+```
+dotfiles/
+├── gaal/
+│   └── config.yaml         ← lives at ~/.config/gaal/config.yaml
+├── git/
+│   └── config
+├── fish/
+│   └── config.fish
+└── install.sh
+```
+
+## Bootstrap script
+
+```bash
+#!/bin/bash
+# install.sh, run once per new machine
+
+set -euo pipefail
+
+# Symlink gaal user config
+mkdir -p ~/.config/gaal
+ln -sf "$PWD/gaal/config.yaml" ~/.config/gaal/config.yaml
+
+# Install gaal if missing
+command -v gaal >/dev/null || \
+  curl -fsSL https://raw.githubusercontent.com/getgaal/gaal/main/scripts/install.sh | sh
+
+# Apply
+gaal sync
+gaal doctor
+```
+
+## Per-project workspace files
+
+A workspace `gaal.yaml` overrides the user file for the things it specifies. Use this for codebase-specific setup that should live with the repo:
+
+```yaml
+# my-project/gaal.yaml
+schema: 1
+
+repositories:
+  vendor/our-mcp-servers:
+    type: git
+    url: git@github.com:acme/mcp-servers.git
+    version: main
+
+skills:
+  - source: ./skills/reviewer
+    agents: ["*"]
+    global: false
+
+mcps:
+  - name: project-db
+    target: ~/.config/claude/claude_desktop_config.json
+    inline:
+      command: uvx
+      args: [mcp-server-postgres, "${DATABASE_URL}"]
+```
+
+Anyone who clones this repo and runs `gaal sync` gets the project-specific MCP server and skills, on top of whatever's in their personal user-scope config.
+
+## Pulling latest
+
+The dotfiles approach degrades gracefully:
+
+- Pull your dotfiles repo (`git pull` from the workflow you already have).
+- Run `gaal sync`.
+
+Or automate the cycle with [continuous service mode](/workflows/sync-vs-service) and a cron `git pull`.
+
+## What not to put in a shared `gaal.yaml`
+
+- Anything secret. See [Environment & secrets](/configure/environment-and-secrets).
+- Per-machine paths (e.g. `target: /Users/me/...`). Use `~/...` so it works for anyone.
+- `telemetry:`, workspace files can't set it anyway. See [Scopes](/concepts/scopes).
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Scopes" icon="layer-group" href="/concepts/scopes" />
+  <Card title="Environment & secrets" icon="key" href="/configure/environment-and-secrets" />
+  <Card title="Continuous service mode" icon="repeat" href="/workflows/sync-vs-service" />
+</CardGroup>

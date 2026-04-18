@@ -1,0 +1,81 @@
+---
+title: "gaal init"
+description: "Bootstrap a gaal.yaml interactively or from flags."
+---
+
+```bash
+gaal init [flags]
+```
+
+Creates a new `gaal.yaml`. Interactively asks how to populate it (import detected skills/MCPs, or start from a documented empty skeleton) and which scope to write to.
+
+## Flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-f`, `--force` | off | Overwrite an existing config file. |
+| `--scope <project\|global>` | (prompt) | Pre-select the scope without prompting. |
+| `--import-all` | off | Non-interactive: import every detected skill and MCP. |
+| `--empty` | off | Non-interactive: write the documented empty skeleton. |
+
+`--empty` and `--import-all` are mutually exclusive. When stdin is not a TTY, exactly one of them must be set.
+
+## Behaviour
+
+- **With a TTY and no flags**, runs the interactive wizard.
+- **Without a TTY**, requires either `--empty` or `--import-all`, plus `--scope`.
+
+## Scopes
+
+| Scope | Output path |
+|-------|-------------|
+| `project` | `./gaal.yaml` |
+| `global` | `~/.config/gaal/config.yaml` (or `$XDG_CONFIG_HOME/gaal/config.yaml`) |
+
+## Examples
+
+```bash
+# Interactive, the most common case
+gaal init
+
+# Empty annotated skeleton, project scope
+gaal init --empty --scope project
+
+# Import everything detected, global scope
+gaal init --import-all --scope global
+
+# Overwrite existing file with an import
+gaal init --import-all --scope project --force
+```
+
+## Sample interactive session
+
+```text
+$ gaal init
+? How should we create your gaal.yaml?
+  ▸ Import everything detected on this machine
+    Start from an empty documented skeleton
+
+? Where should this configuration apply?
+  ▸ Project (./gaal.yaml)
+    Global (~/.config/gaal/config.yaml)
+
+? Select skills to import (Space to toggle, Enter to confirm)
+  [x] code-review (claude-code, project)
+  [x] test-writer (cursor, project)
+  [x] git-helper (claude-code, global)
+
+? Select MCP servers to import
+  [x] filesystem  → claude_desktop_config.json
+  [x] git         → claude_desktop_config.json
+
+✓ wrote ./gaal.yaml (12 skills, 2 mcps)
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart" />
+  <Card title="First-time setup" icon="play" href="/workflows/first-time-setup" />
+  <Card title="gaal audit" icon="magnifying-glass" href="/cli/audit" />
+</CardGroup>

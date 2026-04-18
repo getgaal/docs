@@ -1,0 +1,63 @@
+---
+title: "CLI overview"
+description: "Global flags and a one-line summary of every command."
+---
+
+Every gaal invocation starts with `gaal`. Global flags can sit before or after the subcommand.
+
+## Global flags
+
+These work with every command:
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `-c`, `--config <path>` | `gaal.yaml` | Path to the configuration file. |
+| `-v`, `--verbose` | off | Enable debug logging. |
+| `--no-banner` | off | Suppress the ASCII-art banner. |
+| `--sandbox <dir>` | unset | Redirect every write to this directory. See [Sandbox mode](/workflows/sandbox-mode). |
+| `--log-file <path>` | unset | Write structured JSON logs to this file (in addition to console). |
+| `-o`, `--output <fmt>` | `table` | Output format: `table` or `json`. When `json`, the banner is suppressed automatically. |
+
+## Commands
+
+| Command | Purpose |
+|---------|---------|
+| [`gaal sync`](/cli/sync) | Reconcile every resource in `gaal.yaml` against the filesystem. |
+| [`gaal status`](/cli/status) | Print the current state of every repo, skill, and MCP entry. |
+| [`gaal agents`](/cli/agents) | List registered coding agents and detection status. |
+| [`gaal info`](/cli/info) | Detailed view of a single repo, skill, MCP, or agent. |
+| [`gaal init`](/cli/init) | Bootstrap a `gaal.yaml` interactively or from flags. |
+| [`gaal audit`](/cli/audit) | Read-only scan of skills and MCP entries already on the machine. |
+| [`gaal doctor`](/cli/doctor) | Health check on configuration, sources, targets, and agents. |
+| [`gaal migrate`](/cli/migrate) | Validate and prepare configuration for Community Edition. |
+| [`gaal schema`](/cli/schema) | Print or write the JSON Schema for `gaal.yaml`. |
+| [`gaal version`](/cli/version) | Print version and build time. |
+| [`gaal completion`](/cli/completion) | Generate shell completion scripts. |
+
+## Exit codes
+
+Most commands follow this convention:
+
+| Code | Meaning |
+|------|---------|
+| `0` | Success, nothing to do, or work completed cleanly. |
+| `1` | Warning, work completed but with non-fatal issues, or `--dry-run` reports pending changes. |
+| `2` | Error, operation failed. |
+
+Per-command exit-code semantics are documented on each command's page.
+
+## Examples
+
+```bash
+# Use a config in /etc rather than the default
+gaal --config /etc/gaal/team.yaml sync
+
+# Verbose JSON output
+gaal --verbose -o json status
+
+# Sync everything into a sandbox
+gaal --sandbox /tmp/gaal-test sync
+
+# Service mode with logging
+gaal --log-file /var/log/gaal.json sync --service --interval 5m
+```

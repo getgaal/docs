@@ -1,0 +1,73 @@
+---
+title: "Sandbox mode"
+description: "Redirect every write to a throwaway directory, perfect for CI and testing."
+---
+
+`--sandbox` redirects every filesystem write gaal would normally do to a directory of your choice. Use it whenever you want to run a real sync, including `--prune`, without touching your actual home directory or workspace.
+
+## The basics
+
+```bash
+gaal --sandbox /tmp/gaal-test sync
+```
+
+After this command:
+
+- Repositories are cloned into `/tmp/gaal-test/<original-path>`.
+- Skill directories that would have been written to `~/.claude/skills/...` land in `/tmp/gaal-test/.claude/skills/...`.
+- MCP target files are created (or upserted) under `/tmp/gaal-test/...`.
+
+Nothing outside `/tmp/gaal-test` is touched.
+
+## What it's good for
+
+- **CI**, verify a `gaal.yaml` change applies cleanly without affecting the runner.
+- **Testing a new MCP server**. See what the JSON would look like before letting gaal write it.
+- **Auditing an unfamiliar config**, run `--sandbox` against a stranger's `gaal.yaml` and inspect the result.
+- **Reproducing a bug**, give support team a minimal test case that runs in a known-clean directory.
+
+## Combining with other flags
+
+```bash
+# Plan only, nothing written even inside the sandbox
+gaal --sandbox /tmp/sb sync --dry-run
+
+# Real sync into the sandbox
+gaal --sandbox /tmp/sb sync
+
+# Prune inside the sandbox
+gaal --sandbox /tmp/sb sync --prune
+
+# Status / doctor reading from the sandboxed state
+gaal --sandbox /tmp/sb status
+gaal --sandbox /tmp/sb doctor
+```
+
+## CI example
+
+```yaml
+# .github/workflows/gaal-check.yml
+name: gaal config
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: curl -fsSL https://raw.githubusercontent.com/getgaal/gaal/main/scripts/install.sh | sh
+      - run: gaal doctor
+      - run: gaal --sandbox "$RUNNER_TEMP/gaal-sb" sync --dry-run
+      - run: gaal --sandbox "$RUNNER_TEMP/gaal-sb" sync
+      - run: gaal --sandbox "$RUNNER_TEMP/gaal-sb" status
+```
+
+`gaal doctor` validates the YAML, `--sandbox sync --dry-run` proves the plan computes, and `--sandbox sync` proves it applies. None of it touches the runner's real home.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Dry-run" icon="eye" href="/workflows/dry-run" />
+  <Card title="gaal doctor" icon="stethoscope" href="/cli/doctor" />
+  <Card title="gaal sync" icon="arrows-rotate" href="/cli/sync" />
+</CardGroup>

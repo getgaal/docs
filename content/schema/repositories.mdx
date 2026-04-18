@@ -1,0 +1,101 @@
+---
+title: "repositories"
+description: "VCS-managed sources cloned into your workspace."
+---
+
+```yaml
+repositories:
+  <local-path>:
+    type: <git|hg|svn|bzr|tar|zip>
+    url:  <string>
+    version: <string>   # optional
+```
+
+## Type
+
+`map[string, RepositoryEntry]`
+
+The map key is the destination path, relative to the workspace (or absolute).
+
+## Required
+
+No. Omit `repositories:` entirely if you don't need any.
+
+## Entry fields
+
+### `type`
+
+| Field | Type | Required | Allowed values |
+|-------|------|----------|----------------|
+| `type` | string | yes | `git`, `hg`, `svn`, `bzr`, `tar`, `zip` |
+
+| Type | Backend |
+|------|---------|
+| `git` | Pure-Go (no system git binary required). |
+| `hg` | System `hg` binary. |
+| `svn` | System `svn` binary. |
+| `bzr` | System `bzr` binary. |
+| `tar` | HTTPS download + in-place extraction. |
+| `zip` | HTTPS download + in-place extraction. |
+
+### `url`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `url` | string | yes |
+
+The remote URL or local path. Format depends on the type:
+
+- `git`: `https://...`, `git@host:owner/repo.git`, `file://...`, or a local path.
+- `hg`, `svn`, `bzr`: any URL the matching binary accepts.
+- `tar`, `zip`: any HTTPS URL returning the archive.
+
+### `version`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `version` | string | no |
+
+Type-specific:
+
+| Type | `version` is |
+|------|--------------|
+| `git` | branch, tag, or commit SHA. Defaults to the remote's default branch. |
+| `hg` | revision identifier (changeset, tag, branch). |
+| `svn` | revision number, as a quoted string (`"1234"`). |
+| `bzr` | revision identifier. |
+| `tar`, `zip` | strip-prefix string, the leading directory removed during extraction. |
+
+## Example
+
+```yaml
+repositories:
+  src/gaal:
+    type: git
+    url: https://github.com/getgaal/gaal.git
+    version: main
+
+  src/legacy:
+    type: svn
+    url: https://svn.example.com/repos/legacy/trunk
+    version: "1234"
+
+  vendor/sdk:
+    type: tar
+    url: https://example.com/sdk-v3.tar.gz
+    version: sdk-v3
+```
+
+## Behaviour
+
+- A first sync clones (or extracts) into the destination path.
+- Subsequent syncs fast-forward or re-extract if the URL or version changed.
+- Removing an entry from `gaal.yaml` does **not** delete the directory. `--prune` ignores repositories.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Concepts: Repositories" icon="folder-tree" href="/concepts/repositories" />
+  <Card title="Configure repositories" icon="gear" href="/configure/repositories" />
+  <Card title="Pinning versions" icon="thumbtack" href="/workflows/pinning" />
+</CardGroup>

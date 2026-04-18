@@ -1,0 +1,73 @@
+---
+title: "Agent integrations"
+description: "Every coding agent gaal supports out of the box."
+---
+
+gaal ships with a built-in registry of 21 coding agents plus a vendor-neutral `generic` fallback. For each one, the registry knows where skills live and where to upsert MCP server entries. That's what makes `agents: ["*"]` in your `gaal.yaml` work.
+
+## Supported agents
+
+<CardGroup cols={3}>
+  <Card title="Claude Code" icon="brain" href="/agents/claude-code" />
+  <Card title="Cursor" icon="arrow-pointer" href="/agents/cursor" />
+  <Card title="Codex" icon="code" href="/agents/codex" />
+  <Card title="GitHub Copilot" icon="github" href="/agents/github-copilot" />
+  <Card title="Windsurf" icon="wind" href="/agents/windsurf" />
+  <Card title="Continue" icon="forward" href="/agents/continue" />
+  <Card title="Gemini CLI" icon="sparkles" href="/agents/gemini-cli" />
+  <Card title="Goose" icon="feather" href="/agents/goose" />
+  <Card title="Cline" icon="terminal" href="/agents/cline" />
+  <Card title="Roo" icon="robot" href="/agents/roo" />
+  <Card title="Augment" icon="puzzle-piece" href="/agents/augment" />
+  <Card title="OpenCode" icon="code-branch" href="/agents/opencode" />
+  <Card title="OpenHands" icon="hands" href="/agents/openhands" />
+  <Card title="Trae" icon="bolt" href="/agents/trae" />
+  <Card title="Kilo" icon="bolt" href="/agents/kilo" />
+  <Card title="Kiro CLI" icon="square-terminal" href="/agents/kiro-cli" />
+  <Card title="Amp" icon="wave-square" href="/agents/amp" />
+  <Card title="Zencoder" icon="z" href="/agents/zencoder" />
+  <Card title="Antigravity" icon="rocket" href="/agents/antigravity" />
+  <Card title="Warp" icon="terminal" href="/agents/warp" />
+  <Card title="Generic" icon="boxes-stacked" href="/agents/generic" />
+</CardGroup>
+
+## Quick lookup
+
+| Agent | Project skills | Global skills | MCP config |
+|-------|----------------|---------------|------------|
+| Claude Code | `.claude/skills` | `~/.claude/skills` | `~/.config/claude/claude_desktop_config.json` |
+| Cursor | `.agents/skills` (generic) | `~/.cursor/skills` | `~/.cursor/mcp.json` |
+| Codex | `.agents/skills` (generic) | `~/.codex/skills` | `~/.codex/mcp.json` |
+| GitHub Copilot | `.github/skills` | `~/.copilot/skills` | `~/.vscode/settings.json` |
+| Windsurf | `.windsurf/skills` | `~/.codeium/windsurf/skills` | `~/.codeium/windsurf/mcp_settings.json` |
+| Continue | `.continue/skills` | `~/.continue/skills` | `~/.continue/config.json` |
+| Gemini CLI | `.agents/skills` (generic) | `~/.gemini/skills` | `~/.gemini/settings.json` |
+| Goose | `.goose/skills` | `~/.config/goose/skills` | `~/.config/goose/config.yaml` |
+| Cline | `.agents/skills` (generic) | `~/.agents/skills` (generic) | `~/.vscode/settings.json` |
+| Roo | `.roo/skills` | `~/.roo/skills` | `~/.vscode/settings.json` |
+| Augment | `.augment/skills` | `~/.augment/skills` | `~/.augment/settings.json` |
+| OpenCode | `.agents/skills` (generic) | `~/.config/opencode/skills` | `~/.config/opencode/config.json` |
+| OpenHands | `.openhands/skills` | `~/.openhands/skills` | `~/.openhands/config.json` |
+| Trae | `.trae/skills` | `~/.trae/skills` | `~/.trae/mcp.json` |
+| Kilo | `.kilocode/skills` | `~/.kilocode/skills` | `~/.kilocode/mcp.json` |
+| Kiro CLI | `.kiro/skills` | `~/.kiro/skills` | `~/.kiro/settings/mcp.json` |
+| Amp | `.agents/skills` (generic) | `~/.config/agents/skills` | `~/.config/amp/settings.json` |
+| Zencoder | `.zencoder/skills` | `~/.zencoder/skills` | `~/.zencoder/mcp.json` |
+| Antigravity | `.agents/skills` (generic) | `~/.gemini/antigravity/skills` |, (no MCP) |
+| Warp | `.agents/skills` (generic) | `~/.agents/skills` (generic) | `~/.warp/launch_configurations/mcp.json` |
+| Generic | `.agents/skills` | `~/.agents/skills` |, (no MCP) |
+
+`(generic)` means the agent shares the vendor-neutral `.agents/skills` or `~/.agents/skills` directory rather than maintaining its own. See [Concepts → Agents & renderers](/concepts/agents-and-renderers).
+
+## Listing what's installed on this machine
+
+```bash
+gaal agents               # all registered agents
+gaal agents --installed   # only those gaal detects on this machine
+gaal agents claude-code   # detailed view for one agent
+gaal agents -o json       # machine-readable
+```
+
+## Adding a new agent
+
+Use [Custom agents](/configure/custom-agents) to teach gaal about an agent it doesn't ship with yet. If the agent is publicly available, please open a PR at [github.com/getgaal/gaal](https://github.com/getgaal/gaal) so everyone gets it.
