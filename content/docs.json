@@ -21,6 +21,11 @@
     "family": "Urbanist",
     "weight": 500
   },
+  "styling": {
+    "codeblocks": {
+      "theme": "nord"
+    }
+  },
   "navigation": {
     "tabs": [
       {
