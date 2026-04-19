@@ -18,6 +18,9 @@ sources:
 mcps:
   ✓ ~/.config/claude/claude_desktop_config.json   writable
   ✓ ~/.cursor/mcp.json                            writable
+tools:
+  ✓ gh           (on PATH: /opt/homebrew/bin/gh)
+  ! rtk          — missing from PATH (required by: workspace; hint: cargo install rtk)
 agents:
   installed: claude-code, cursor, codex
   not installed: github-copilot, windsurf
@@ -32,8 +35,9 @@ In order, doctor checks:
 1. **Config validity**, does `gaal.yaml` parse? Does it conform to the schema? Are scope-restricted fields used in the wrong scope?
 2. **Source reachability**, every `skills[*].source` and every `mcps[*].source` URL is contacted (HEAD only, no download).
 3. **MCP target writability**, every `mcps[*].target` file is checked for read/write permission. Missing files are OK; the target will be created on sync.
-4. **Agent installation**, for each agent in the registry, doctor reports whether gaal detects it on this machine.
-5. **Telemetry status**, opt-in / opt-out, plus the source file the value came from.
+4. **Tool presence**, every entry under top-level `tools:` and per-skill `tools:` is looked up on `PATH` with `exec.LookPath`. Missing tools warn (exit code 1) and show the `hint` when one is declared. See [`schema/tools`](/schema/tools).
+5. **Agent installation**, for each agent in the registry, doctor reports whether gaal detects it on this machine.
+6. **Telemetry status**, opt-in / opt-out, plus the source file the value came from.
 
 ## Exit codes
 

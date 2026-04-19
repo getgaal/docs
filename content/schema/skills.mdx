@@ -9,6 +9,7 @@ skills:
     agents: <[string] | ["*"]>
     global: <bool>          # optional, default false
     select: <[string]>      # optional
+    tools: <[ToolEntry]>    # optional
 ```
 
 ## Type
@@ -67,6 +68,14 @@ Either a list of registry names (`[claude-code, cursor, codex]`) or the wildcard
 
 Names (matching subdirectory names in the source) of specific skills to install. Empty or omitted = install everything in the source.
 
+### `tools`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `tools` | array of [ToolEntry](/schema/tools) | no |
+
+CLI tools this skill collection depends on. Checked for presence by `gaal doctor` and surfaced in the `gaal sync` missing-tool banner. Accepts the same shorthand and full forms as the top-level `tools:` block — see [Tools](/schema/tools).
+
 ## Example
 
 ```yaml
@@ -83,6 +92,12 @@ skills:
   - source: ./company-skills
     agents: [claude-code, cursor]
     global: false
+
+  - source: obra/superpowers
+    agents: ["*"]
+    tools:
+      - name: tree-sitter
+        hint: "brew install tree-sitter"
 ```
 
 ## Behaviour

@@ -7,7 +7,7 @@ description: "Health check on configuration, sources, targets, and agents."
 gaal doctor [flags]
 ```
 
-Validates `gaal.yaml`, checks that every source is reachable, verifies every MCP target is writable, and reports agent and telemetry status. Run it any time gaal is misbehaving, and as a CI gate.
+Validates `gaal.yaml`, checks that every source is reachable, verifies every MCP target is writable, confirms any declared `tools:` are on `PATH`, and reports agent and telemetry status. Run it any time gaal is misbehaving, and as a CI gate.
 
 ## Flags
 
@@ -43,6 +43,9 @@ sources:
 mcps:
   ✓ ~/.config/claude/claude_desktop_config.json   writable
   ✓ ~/.cursor/mcp.json                            writable
+tools:
+  ✓ gh           (on PATH: /opt/homebrew/bin/gh)
+  ! rtk          — missing from PATH (required by: workspace; hint: cargo install rtk)
 agents:
   installed: claude-code, cursor, codex
   not installed: github-copilot, windsurf

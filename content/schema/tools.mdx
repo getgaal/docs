@@ -1,0 +1,111 @@
+---
+title: "tools"
+description: "CLI tools expected to be on PATH, checked by doctor and sync."
+---
+
+```yaml
+tools:
+  - <name>                  # bare-string shorthand
+  - name: <string>
+    hint: <string>          # optional
+```
+
+## Type
+
+`array[ToolEntry]`
+
+## Required
+
+No. Omit `tools:` if you don't depend on any external CLIs. When absent everywhere, `gaal doctor` renders no Tools section and `gaal sync` prints no banner.
+
+## Where it can appear
+
+`tools:` is valid in two places:
+
+| Location | Meaning |
+|----------|---------|
+| Top level of `gaal.yaml` | Tools required by the workspace as a whole. |
+| Inside a `skills[]` entry | Tools required specifically by that skill collection. |
+
+Both forms accept the same schema. At check time, gaal unions the two lists and deduplicates by `name`; a top-level entry wins over a per-skill entry with the same name. See [Behaviour](#behaviour) below.
+
+## Entry fields
+
+### `name`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `name` | string | yes |
+
+The executable name to look up on `PATH`. Uses Go's `exec.LookPath`, so Windows `.exe` resolution is handled automatically.
+
+### `hint`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `hint` | string | no |
+
+Free-form install instruction shown when the tool is missing. Typically a one-liner like `brew install tree-sitter` or a URL. gaal does not parse or execute the hint; it's displayed as-is.
+
+## Bare-string shorthand
+
+A plain string is equivalent to an object with only `name` set:
+
+```yaml
+tools:
+  - gh          # same as { name: gh }
+  - rtk         # same as { name: rtk }
+```
+
+Mix shorthand and full form freely:
+
+```yaml
+tools:
+  - gh
+  - rtk
+  - name: tree-sitter
+    hint: "brew install tree-sitter"
+```
+
+## Example
+
+```yaml gaal.yaml
+schema: 1
+
+tools:
+  - gh
+  - name: rtk
+    hint: "cargo install rtk"
+
+skills:
+  - source: obra/superpowers
+    agents: ["*"]
+    tools:
+      - name: tree-sitter
+        hint: "brew install tree-sitter"
+```
+
+## Behaviour
+
+- **Presence only.** gaal runs `exec.LookPath(name)` for each entry. No version parsing, no execution of the tool.
+- **Dedup by name.** Top-level and per-skill `tools:` are unioned; the first occurrence wins. Top-level is collected before per-skill, so a workspace-level entry with a hint overrides a bare per-skill mention of the same name.
+- **Merge across scopes.** `tools:` follows the standard config merge chain (system → user → workspace). A higher-priority scope replaces lower-priority entries with the same `name`.
+- **`gaal doctor`.** Adds a `tools:` section to the output. Found tools render `✓ <name> (on PATH: <resolved>)`. Missing tools render `! <name> — missing from PATH (required by: <source>; hint: <hint>)` and bump the exit code to `1` (warning).
+- **`gaal sync`.** Prints a compact one-time banner to stderr at the start of sync listing any missing tools, then proceeds normally. Exit code is unaffected; sync never blocks on missing tools.
+
+## Out of scope
+
+The following are intentionally **not** supported today:
+
+- **Version checks.** `--version` parsing varies too much across tools.
+- **Installation.** gaal does not install tools. `hint` is display-only.
+- **Skill-repo-declared tools.** Tools must be declared in your own `gaal.yaml`; gaal does not read tool requirements from inside skill source repos.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="gaal doctor" icon="stethoscope" href="/cli/doctor" />
+  <Card title="gaal sync" icon="rotate" href="/cli/sync" />
+  <Card title="Using gaal doctor" icon="notes-medical" href="/troubleshooting/doctor" />
+  <Card title="The gaal.yaml file" icon="file-code" href="/concepts/gaal-yaml" />
+</CardGroup>

@@ -72,6 +72,19 @@ $ gaal sync
 sync complete in 1.2s
 ```
 
+## Missing tool banner
+
+If any entry in [`tools:`](/schema/tools) is missing from `PATH`, sync prints a single compact banner to stderr before it starts work, then proceeds:
+
+```text
+⚠ Required tools missing from PATH:
+    rtk          — cargo install rtk
+    tree-sitter  — (required by skill obra/superpowers)
+  Run `gaal doctor` for details.
+```
+
+Each line shows the `hint` when one is set; otherwise it shows the source that declared the tool. Missing tools never change sync's exit code — run [`gaal doctor`](/cli/doctor) for the full attribution and a non-zero exit code.
+
 ## Related
 
 <CardGroup cols={2}>
