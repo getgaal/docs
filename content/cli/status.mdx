@@ -13,7 +13,7 @@ Reports the actual state of every resource managed by `gaal.yaml`, what's on dis
 
 Only the [global flags](/cli/overview#global-flags). The `-o json` flag is most useful here for scripting.
 
-## Sample output (table)
+## Sample output
 
 ```text
 $ gaal status
@@ -31,6 +31,8 @@ mcps
   github                 ~/.config/claude/claude_desktop_config.json
   filesystem             ~/.cursor/mcp.json
 ```
+
+Use `-o table` for a boxed pterm layout with coloured status cells, or `-o json` for structured data.
 
 ## Sample output (JSON)
 
