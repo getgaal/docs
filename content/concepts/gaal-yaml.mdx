@@ -30,6 +30,9 @@ skills:
 mcps:
   # - { name, target, source | inline }
 
+tools:
+  # - <name> or { name, hint }
+
 telemetry: false   # opt-in, user/system scope only
 ```
 
@@ -39,6 +42,7 @@ telemetry: false   # opt-in, user/system scope only
 | [`repositories`](/schema/repositories) | map | no | VCS-managed sources cloned into your workspace. |
 | [`skills`](/schema/skills) | array | no | `SKILL.md` collections to install per agent. |
 | [`mcps`](/schema/mcps) | array | no | MCP server entries upserted into agent JSON configs. |
+| [`tools`](/schema/tools) | array | no | CLI tools expected on `PATH`, reported by `gaal doctor`. |
 | [`telemetry`](/schema/telemetry) | bool | no | Opt-in anonymous usage telemetry. Off by default. |
 
 Every key is independent. A file with only `skills:` is a valid gaal.yaml and a sync only touches skills.
@@ -78,6 +82,11 @@ mcps:
   - name: github
     source: https://example.com/mcp/github.json
     target: ~/.config/claude/claude_desktop_config.json
+
+tools:
+  - gh
+  - name: rtk
+    hint: "cargo install rtk"
 ```
 
 ## Validate before sync

@@ -144,6 +144,7 @@
               "schema/repositories",
               "schema/skills",
               "schema/mcps",
+              "schema/tools",
               "schema/telemetry"
             ]
           }
