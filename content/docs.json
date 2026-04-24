@@ -3,18 +3,19 @@
   "theme": "mint",
   "name": "gaal",
   "colors": {
-    "primary": "#DEFF9A",
+    "primary": "#3E5A12",
     "light": "#DEFF9A",
-    "dark": "#DEFF9A"
+    "dark": "#3E5A12"
   },
   "favicon": "/favicon.svg",
   "appearance": {
     "default": "dark",
-    "strict": true
+    "strict": false
   },
   "background": {
     "color": {
-      "dark": "#000000"
+      "dark": "#000000",
+      "light": "#F5F5F5"
     }
   },
   "fonts": {
