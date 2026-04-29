@@ -29,7 +29,8 @@ skills:
 ```yaml gaal.yaml
 mcps:
   - name: filesystem
-    target: ~/.zencoder/mcp.json
+    agents: [zencoder]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]

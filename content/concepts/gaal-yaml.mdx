@@ -28,7 +28,7 @@ skills:
   # - { source, agents, global, select }
 
 mcps:
-  # - { name, target, source | inline }
+  # - { name, agents, global, source | inline }
 
 tools:
   # - <name> or { name, hint }
@@ -74,14 +74,16 @@ skills:
 
 mcps:
   - name: filesystem
-    target: ~/.config/claude/claude_desktop_config.json
+    agents: [claude-code]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]
 
   - name: github
     source: https://example.com/mcp/github.json
-    target: ~/.config/claude/claude_desktop_config.json
+    agents: [claude-code, github-copilot]
+    global: true
 
 tools:
   - gh

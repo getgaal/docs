@@ -30,7 +30,8 @@ skills:
 ```yaml gaal.yaml
 mcps:
   - name: filesystem
-    target: ~/.trae/mcp.json
+    agents: [trae]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]

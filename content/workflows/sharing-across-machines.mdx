@@ -69,7 +69,8 @@ skills:
 
 mcps:
   - name: project-db
-    target: ~/.config/claude/claude_desktop_config.json
+    agents: [claude-code]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-postgres, "${DATABASE_URL}"]
@@ -89,7 +90,7 @@ Or automate the cycle with [continuous service mode](/workflows/sync-vs-service)
 ## What not to put in a shared `gaal.yaml`
 
 - Anything secret. See [Environment & secrets](/configure/environment-and-secrets).
-- Per-machine paths (e.g. `target: /Users/me/...`). Use `~/...` so it works for anyone.
+- Per-machine absolute paths (e.g. `args: [mcp-server-filesystem, /Users/me/...]`). Use `~/...` so it works for anyone.
 - `telemetry:`, workspace files can't set it anyway. See [Scopes](/concepts/scopes).
 
 ## Related

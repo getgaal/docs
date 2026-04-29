@@ -33,7 +33,8 @@ skills:
 ```yaml gaal.yaml
 mcps:
   - name: github
-    target: ~/.vscode/settings.json
+    agents: [github-copilot]
+    global: true
     inline:
       command: npx
       args: ["-y", "@modelcontextprotocol/server-github"]

@@ -30,7 +30,8 @@ skills:
 ```yaml gaal.yaml
 mcps:
   - name: filesystem
-    target: ~/.gemini/settings.json
+    agents: [gemini-cli]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]

@@ -31,7 +31,8 @@ Skills land in `.agents/skills/`, Cline picks them up via the generic convention
 ```yaml gaal.yaml
 mcps:
   - name: filesystem
-    target: ~/.vscode/settings.json
+    agents: [cline]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]
