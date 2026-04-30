@@ -11,7 +11,7 @@ description: "OpenAI Codex CLI coding agent."
 |----------|------|
 | Project skills | `.agents/skills` (generic fallback) |
 | Global skills | `~/.codex/skills` |
-| MCP config | `~/.codex/mcp.json` |
+| MCP config | `~/.codex/config.toml` |
 | Audit search (project) | `.agents/skills`, `.github/skills`, `.claude/skills` |
 | Audit search (global) | `~/.codex/skills`, `~/.agents/skills`, `~/.copilot/skills` |
 
@@ -26,6 +26,8 @@ skills:
 
 ## MCP example
 
+Codex reads MCP servers from `~/.codex/config.toml` under `[mcp_servers.<name>]` tables. gaal detects the `.toml` extension on the registry-resolved path and writes TOML, preserving unrelated keys (`model`, `sandbox`, `[analytics]`, …) on every write.
+
 ```yaml gaal.yaml
 mcps:
   - name: filesystem
@@ -35,6 +37,10 @@ mcps:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]
 ```
+
+<Note>
+  If you have an existing `~/.codex/mcp.json` from an older gaal release, Codex never read it. `gaal sync` prints a one-shot warning when it sees the file; it's safe to delete by hand.
+</Note>
 
 ## Related
 

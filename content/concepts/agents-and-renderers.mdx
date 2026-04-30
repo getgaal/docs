@@ -22,7 +22,7 @@ $ gaal agents
 NAME             INSTALLED  PROJECT_SKILLS    GLOBAL_SKILLS                MCP_CONFIG
 claude-code      yes        .claude/skills    ~/.claude/skills             ~/.config/claude/claude_desktop_config.json
 cursor           yes        .agents/skills    ~/.cursor/skills             ~/.cursor/mcp.json
-codex            yes        .agents/skills    ~/.codex/skills              ~/.codex/mcp.json
+codex            yes        .agents/skills    ~/.codex/skills              ~/.codex/config.toml
 github-copilot   no         .github/skills    ~/.copilot/skills            ~/.vscode/settings.json
 …
 ```
@@ -45,7 +45,7 @@ Agents marked installed are the ones that win when you use the `agents: ["*"]` w
 Once gaal knows *what* to install (the plan from `gaal sync`) and *where* (the registry), the per-agent renderer does the actual write:
 
 - For skills, the renderer copies the source files into the agent's skills directory and adapts file names if the agent expects a different layout.
-- For MCP servers, the renderer reads the target JSON, upserts the `mcpServers` entry, and writes the file back atomically.
+- For MCP servers, the renderer reads the target file, upserts the entry under `mcpServers` (JSON) or `[mcp_servers.<name>]` (TOML, used by Codex), and writes the file back atomically.
 
 Renderers are responsible for the *guarantees*, they never clobber, they always write atomically, and they fail loudly when the target is malformed.
 
