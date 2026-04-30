@@ -10,7 +10,7 @@ gaal is a small, opinionated state engine. Once you understand the four moving p
 Every gaal command runs the same four-stage pipeline.
 
 1. **gaal.yaml, the source of truth.** You write it (or generate it with `gaal init`) and commit it to your dotfiles. Everything downstream reads from this file.
-2. **Audit, read the filesystem.** gaal scans the local filesystem to discover what's already there: every installed agent, every skill on disk, every MCP entry in every agent's JSON config. Audit writes nothing.
+2. **Audit, read the filesystem.** gaal scans the local filesystem to discover what's already there: every installed agent, every skill on disk, every MCP entry in every agent's config (JSON for most, TOML for Codex). Audit writes nothing.
 3. **Plan, diff desired vs actual.** gaal compares the desired state from `gaal.yaml` against the actual state from the audit and computes the work to do. `gaal sync --dry-run` stops at this stage and prints the plan.
 4. **Sync, apply through renderers.** The plan executes through per-agent **renderers**, small adapters that know each agent's native file layout and config format. They write to `.claude/skills/*`, `.cursor/mcp.json`, `~/.codex/skills/*`, and so on.
 

@@ -3,15 +3,15 @@ title: "MCP servers"
 description: "Upsert MCP server entries into agent configs without clobbering them."
 ---
 
-An **MCP server** is a process that speaks the [Model Context Protocol](https://modelcontextprotocol.io). Coding agents that support MCP read a JSON config that lists the servers to launch and how to reach them.
+An **MCP server** is a process that speaks the [Model Context Protocol](https://modelcontextprotocol.io). Coding agents that support MCP read a config file (JSON for most, TOML for Codex) that lists the servers to launch and how to reach them.
 
-gaal manages those entries declaratively: you describe each server once in `gaal.yaml` and gaal upserts it into the right JSON file for every agent that should see it. The destination path is resolved automatically from the [agent registry](/agents/overview) — you no longer have to spell it out.
+gaal manages those entries declaratively: you describe each server once in `gaal.yaml` and gaal upserts it into the right config file for every agent that should see it. The destination path is resolved automatically from the [agent registry](/agents/overview), and the format is picked from its extension (`.json` or `.toml`) — you no longer have to spell either out.
 
 ## The upsert guarantee
 
-Every agent's MCP config lives inside a larger config file. `claude_desktop_config.json` carries other Claude Desktop settings; `~/.vscode/settings.json` carries every VS Code preference. You can't safely overwrite the whole file.
+Every agent's MCP config lives inside a larger config file. `claude_desktop_config.json` carries other Claude Desktop settings; `~/.vscode/settings.json` carries every VS Code preference; `~/.codex/config.toml` carries Codex's `model`, `sandbox`, and `[analytics]` settings. You can't safely overwrite the whole file.
 
-gaal reads the target JSON, modifies the `mcpServers` object in place, and writes it back. Other top-level keys are preserved exactly. That's the upsert guarantee: gaal never clobbers a config it didn't author.
+gaal reads the target, modifies the MCP servers section in place (`mcpServers` in JSON, `[mcp_servers.<name>]` tables in TOML), and writes it back. Other top-level keys are preserved exactly. That's the upsert guarantee: gaal never clobbers a config it didn't author.
 
 ## Targeting agents, not paths
 
@@ -68,7 +68,7 @@ mcps:
 
 ### Remote source
 
-For configs maintained elsewhere, point at a URL that returns an `mcpServers` document. gaal downloads the JSON and merges the entry whose key matches `name` into each target.
+For configs maintained elsewhere, point at a URL that returns an `mcpServers` document. gaal downloads the JSON and merges the entry whose key matches `name` into each target (translating to TOML when the resolved target is a `.toml` file).
 
 ```yaml
 mcps:
@@ -116,15 +116,15 @@ The bridge handles authentication redirects and session resumption on your behal
 
 ## Behaviour during sync
 
-- The target JSON is updated in place; the named entry is added or refreshed under `mcpServers`.
-- Other top-level keys in the target file are preserved.
-- Other entries inside `mcpServers` that gaal didn't author are preserved.
+- The target file is updated in place; the named entry is added or refreshed under `mcpServers` (JSON) or `[mcp_servers.<name>]` (TOML).
+- Other top-level keys in the target file are preserved. TOML targets round-trip through a generic map, so unrelated tables (`[analytics]`, `[features]`, …) survive every write; comments are not preserved.
+- Other MCP entries that gaal didn't author are preserved.
 - Removing an `mcps[]` entry from `gaal.yaml` does **not** remove it from the target file unless you pass `--prune`.
 - If the target's parent directory is missing, the entry is skipped — gaal never creates an agent's config directory as a side effect.
 
 ## Behaviour with `--prune`
 
-`gaal sync --prune` removes any `mcpServers` entries from gaal-managed targets that aren't in `gaal.yaml`. It only touches keys gaal could plausibly own; your other settings and other servers stay untouched. See [Pruning](/workflows/pruning) for the exact algorithm.
+`gaal sync --prune` removes any MCP server entries from gaal-managed targets that aren't in `gaal.yaml`. It only touches keys gaal could plausibly own; your other settings and other servers stay untouched. See [Pruning](/workflows/pruning) for the exact algorithm.
 
 ## Migrating from `target:`
 

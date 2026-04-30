@@ -64,6 +64,8 @@ mcps:
       args: [mcp-server-filesystem, ~/projects]
 ```
 
+For Codex, gaal writes the entry as a `[mcp_servers.filesystem]` TOML table; for the others it lands under `mcpServers` in JSON. Format dispatch is automatic.
+
 Or use the wildcard to install in every agent registered on this machine that exposes a global MCP config:
 
 ```yaml
@@ -148,6 +150,32 @@ mcps:
 
 gaal upserts under the `mcpServers` key while leaving every other VS Code setting in place.
 
+## Codex (TOML)
+
+Codex reads MCP servers from `~/.codex/config.toml` under `[mcp_servers.<name>]` tables. gaal detects the `.toml` extension on the registry-resolved path and writes TOML automatically:
+
+```yaml
+mcps:
+  - name: context7
+    agents: [codex]
+    global: true
+    inline:
+      command: npx
+      args: ["-y", "@upstash/context7-mcp@latest"]
+```
+
+Becomes:
+
+```toml
+[mcp_servers.context7]
+command = 'npx'
+args = ['-y', '@upstash/context7-mcp@latest']
+```
+
+Unrelated top-level keys (`model`, `sandbox`, `[analytics]`, `[features]`, …) are preserved on every write. Comments are not preserved, so prefer external documentation over inline TOML comments in this file.
+
+If you have an existing `~/.codex/mcp.json` from an older gaal release, Codex never read it. `gaal sync` prints a one-shot warning when it sees the file; it's safe to delete by hand.
+
 ## Common targets
 
 The destination file is resolved from the agent registry. For reference:
@@ -156,7 +184,7 @@ The destination file is resolved from the agent registry. For reference:
 |-------|----------------------------------|
 | Claude Code / Claude Desktop | `~/.config/claude/claude_desktop_config.json` |
 | Cursor | `~/.cursor/mcp.json` |
-| Codex | `~/.codex/mcp.json` |
+| Codex | `~/.codex/config.toml` |
 | Windsurf | `~/.codeium/windsurf/mcp_settings.json` |
 | Continue | `~/.continue/config.json` |
 | VS Code (Copilot, Cline, Roo) | `~/.vscode/settings.json` |

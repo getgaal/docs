@@ -1,6 +1,6 @@
 ---
 title: "mcps"
-description: "MCP server entries upserted into agent JSON configs."
+description: "MCP server entries upserted into agent config files."
 ---
 
 ```yaml
@@ -33,7 +33,7 @@ No. Omit `mcps:` if you don't manage any.
 |-------|------|----------|
 | `name` | string | yes |
 
-The identifier the entry is upserted under inside the target's `mcpServers` object.
+The identifier the entry is upserted under: as a key inside the target's `mcpServers` object for JSON files, or as the `[mcp_servers.<name>]` table for TOML files (Codex).
 
 ### `agents`
 
@@ -45,7 +45,7 @@ Either a list of registry names (`[claude-code, cursor, codex]`) or the wildcard
 
 `["*"]` resolves at sync time to every registered agent that has a non-empty MCP config for the requested scope. Agents whose registry entry has no MCP config for that scope are skipped silently.
 
-The destination JSON file is then looked up in the [agent registry](/agents/overview) — `global_mcp_config_file` for `global: true`, `project_mcp_config_file` for `global: false`.
+The destination file is then looked up in the [agent registry](/agents/overview) — `global_mcp_config_file` for `global: true`, `project_mcp_config_file` for `global: false`. The format is picked from the resolved file's extension: `.json` for most agents, `.toml` for Codex.
 
 ### `global`
 
@@ -142,9 +142,9 @@ mcps:
 
 ## Behaviour
 
-- gaal upserts under the `mcpServers` object of every resolved target file.
-- Other top-level keys in the target are preserved.
-- Other entries inside `mcpServers` that gaal didn't author are preserved.
+- gaal upserts under the `mcpServers` object of every resolved JSON target, or under `[mcp_servers.<name>]` tables for TOML targets (Codex).
+- Other top-level keys in the target are preserved. TOML targets round-trip through a generic map, so unrelated tables (`[analytics]`, `[features]`, …) survive every write; comments are not preserved.
+- Other MCP entries that gaal didn't author are preserved.
 - Removing an entry from `gaal.yaml` does **not** remove it from the target unless you pass `--prune`.
 - gaal does **not** expand `${VAR}` references in `args:` or `env:`. The agent process resolves them when launching the server.
 - When the resolved target's parent directory is missing, gaal silently skips the entry — it never creates an agent's config directory as a side effect.
