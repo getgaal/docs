@@ -15,7 +15,7 @@ Prints a full information card for every entry of the given type, combining the 
 |------|-------|
 | `repo` | URL, type, configured version vs current HEAD, dirty flag. |
 | `skill` | Source, target agents, scope, selection filter, per-agent installation tree. |
-| `mcp` | Server name, target file, inline definition, merge flag, dirty detection. |
+| `mcp` | Server name, target agents and scope, resolved target file(s), inline definition, merge flag, dirty detection. |
 | `agent` | Supported coding agent, skill directory paths, MCP config path, built-in vs custom. |
 
 ## Filter argument
@@ -26,7 +26,7 @@ The optional second argument is a case-insensitive substring match against the e
 gaal info skill                           # every skill entry
 gaal info skill vercel-labs/agent-skills  # skills sourced from this repo
 gaal info repo workspace/myrepo
-gaal info mcp claude                      # MCP entries whose name or target matches "claude"
+gaal info mcp claude                      # MCP entries whose name matches "claude"
 gaal info agent                           # all registered agents
 gaal info agent cursor
 ```
@@ -48,11 +48,15 @@ skill: frontend-design
 ```text
 $ gaal info mcp filesystem
 mcp: filesystem
-  target: ~/.config/claude/claude_desktop_config.json
+  agents: [claude-code, cursor]
+  scope:  global
+  resolved targets:
+    claude-code → ~/.config/claude/claude_desktop_config.json
+    cursor      → ~/.cursor/mcp.json
   inline:
     command: uvx
     args:    [mcp-server-filesystem, ~/projects]
-  state:  upserted, hash matches config
+  state:  upserted, hash matches config (both targets)
 ```
 
 ## JSON output

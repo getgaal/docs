@@ -6,12 +6,15 @@ description: "MCP server entries upserted into agent JSON configs."
 ```yaml
 mcps:
   - name: <string>
-    target: <path>
-    source: <url>           # mutually exclusive with inline
-    inline:                 # mutually exclusive with source
+    agents: <[string] | ["*"]>
+    global: <bool>           # optional, default false (set true for current agents)
+    source: <url>            # mutually exclusive with inline
+    inline:                  # mutually exclusive with source
       command: <string>
       args: <[string]>
       env: <map[string,string]>
+    merge: <bool>            # optional, default true
+    target: <path>           # deprecated — use agents instead
 ```
 
 ## Type
@@ -30,26 +33,32 @@ No. Omit `mcps:` if you don't manage any.
 |-------|------|----------|
 | `name` | string | yes |
 
-The identifier the entry will be upserted under inside the target's `mcpServers` object.
+The identifier the entry is upserted under inside the target's `mcpServers` object.
 
-### `target`
+### `agents`
 
 | Field | Type | Required |
 |-------|------|----------|
-| `target` | string | yes |
+| `agents` | array of strings | yes (when `target` is not set) |
 
-Path to the JSON file gaal will upsert into. Absolute or `~/`-prefixed. Common values:
+Either a list of registry names (`[claude-code, cursor, codex]`) or the wildcard `["*"]`.
 
-| Agent | Target |
-|-------|--------|
-| Claude Desktop | `~/.config/claude/claude_desktop_config.json` |
-| Cursor | `~/.cursor/mcp.json` |
-| Codex | `~/.codex/mcp.json` |
-| Windsurf | `~/.codeium/windsurf/mcp_settings.json` |
-| Continue | `~/.continue/config.json` |
-| VS Code (Copilot, Cline, Roo) | `~/.vscode/settings.json` |
+`["*"]` resolves at sync time to every registered agent that has a non-empty MCP config for the requested scope. Agents whose registry entry has no MCP config for that scope are skipped silently.
 
-The full list is on each [agent integration page](/agents/overview).
+The destination JSON file is then looked up in the [agent registry](/agents/overview) — `global_mcp_config_file` for `global: true`, `project_mcp_config_file` for `global: false`.
+
+### `global`
+
+| Field | Type | Required | Default |
+|-------|------|----------|---------|
+| `global` | bool | no | `false` |
+
+| Value | Resolved path |
+|-------|---------------|
+| `true` | `global_mcp_config_file` from the registry — the agent's user-global MCP config (e.g. `~/.config/claude/claude_desktop_config.json`). |
+| `false` | `project_mcp_config_file` from the registry — the agent's workspace-scoped MCP config. |
+
+In the current registry every built-in agent only ships a `global_mcp_config_file`. Set `global: true` on every entry until per-project MCP configs land. With `global: false` (the YAML default) gaal silently skips the entry for every agent that has no project-scoped MCP path.
 
 ### `source`
 
@@ -57,7 +66,7 @@ The full list is on each [agent integration page](/agents/overview).
 |-------|------|----------|
 | `source` | URL | conditionally |
 
-A URL returning a JSON document with an `mcpServers` object. gaal downloads the file and merges the entry named `name` into the target.
+A URL returning a JSON document with an `mcpServers` object. gaal downloads the file and merges the entry whose key matches `name` into each resolved target.
 
 Mutually exclusive with `inline`.
 
@@ -67,7 +76,7 @@ Mutually exclusive with `inline`.
 |-------|------|----------|
 | `inline` | object | conditionally |
 
-The MCP server spec, written directly in `gaal.yaml`. Fields:
+The MCP server spec, written directly in `gaal.yaml`. Inline entries are stdio servers — for HTTP or SSE transports use a stdio bridge (see [Configure → Streamable HTTP server](/configure/mcp-servers#streamable-http-server)).
 
 | Subfield | Type | Required |
 |----------|------|----------|
@@ -77,28 +86,68 @@ The MCP server spec, written directly in `gaal.yaml`. Fields:
 
 Mutually exclusive with `source`. Exactly one of `source` or `inline` must be set per entry.
 
+### `merge`
+
+| Field | Type | Required | Default |
+|-------|------|----------|---------|
+| `merge` | bool | no | `true` |
+
+Whether to merge the entry into the existing `mcpServers` object (preserving siblings) or overwrite it. The default keeps every server gaal didn't author.
+
+### `target` (deprecated)
+
+| Field | Type | Required |
+|-------|------|----------|
+| `target` | string | no |
+
+Explicit path to the JSON file. Deprecated — set `agents:` and `global:` instead so the path comes from the registry. When both `target` and `agents` are set, `target` wins and gaal logs a deprecation warning.
+
 ## Example
 
 ```yaml
 mcps:
+  # Inline stdio server, fanned out to two agents.
   - name: filesystem
-    target: ~/.config/claude/claude_desktop_config.json
+    agents: [claude-code, cursor]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]
 
+  # Streamable HTTP server, bridged through mcp-remote.
+  - name: linear
+    agents: [claude-code]
+    global: true
+    inline:
+      command: npx
+      args:
+        - -y
+        - mcp-remote
+        - https://mcp.linear.app/mcp
+
+  # SSE server, bridged through mcp-remote.
+  - name: sentry
+    agents: [claude-code]
+    global: true
+    inline:
+      command: npx
+      args: [-y, mcp-remote, https://mcp.sentry.dev/sse, --transport, sse-only]
+
+  # Remote source, every detected agent.
   - name: github
     source: https://raw.githubusercontent.com/github/mcp-servers/main/config.json
-    target: ~/.config/claude/claude_desktop_config.json
+    agents: ["*"]
+    global: true
 ```
 
 ## Behaviour
 
-- gaal upserts under the `mcpServers` object of the target file.
-- Other top-level keys in the target file are preserved.
+- gaal upserts under the `mcpServers` object of every resolved target file.
+- Other top-level keys in the target are preserved.
 - Other entries inside `mcpServers` that gaal didn't author are preserved.
 - Removing an entry from `gaal.yaml` does **not** remove it from the target unless you pass `--prune`.
 - gaal does **not** expand `${VAR}` references in `args:` or `env:`. The agent process resolves them when launching the server.
+- When the resolved target's parent directory is missing, gaal silently skips the entry — it never creates an agent's config directory as a side effect.
 
 ## Related
 

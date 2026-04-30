@@ -35,7 +35,8 @@ skills:
 
 mcps:
   - name: filesystem
-    target: ~/.config/claude/claude_desktop_config.json
+    agents: ["*"]            # every detected agent
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]

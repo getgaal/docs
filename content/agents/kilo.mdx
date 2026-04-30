@@ -29,7 +29,8 @@ skills:
 ```yaml gaal.yaml
 mcps:
   - name: filesystem
-    target: ~/.kilocode/mcp.json
+    agents: [kilo]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]

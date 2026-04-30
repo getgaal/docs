@@ -29,7 +29,8 @@ skills:
 ```yaml gaal.yaml
 mcps:
   - name: filesystem
-    target: ~/.openhands/config.json
+    agents: [openhands]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]

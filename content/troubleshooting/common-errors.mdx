@@ -53,26 +53,36 @@ The `source:` URL doesn't resolve. Either:
 - It's a private repo and your local credentials don't grant access, check your SSH key / `~/.netrc`.
 - You're offline, pass `--offline` to `doctor` or wait until you're online.
 
-## "target file not writable"
+## "MCP target file not writable"
 
 ```text
-✗ mcps[1].target: ~/.config/claude/claude_desktop_config.json (permission denied)
+✗ mcp "filesystem": ~/.config/claude/claude_desktop_config.json (permission denied)
 ```
 
-gaal can't write to the MCP target file. Either:
+gaal can't write to the MCP target file resolved from the agent registry. Either:
 
 - The file's permissions are wrong, `chmod 644` it.
-- The parent directory doesn't exist and isn't user-writable, `mkdir -p` it manually.
+- The parent directory exists but isn't user-writable, fix the permissions.
 - The path crosses a read-only mount.
 
-## "target file is not valid JSON"
+If the parent directory is **missing**, gaal silently skips the entry rather than creating an agent-owned directory; install the agent first (or pre-create the directory yourself).
+
+## "MCP target file is not valid JSON"
 
 ```text
-✗ mcps[0].target: ~/.config/claude/claude_desktop_config.json
-    invalid JSON at line 12, col 3
+✗ mcp "filesystem": parsing existing config ~/.config/claude/claude_desktop_config.json
+    invalid character '}' looking for beginning of object key string
 ```
 
 Someone (you, an installer, an editor crash) wrote invalid JSON into the target file. gaal won't try to fix it because it can't safely tell what was intended. Open the file, fix the syntax, run sync again.
+
+## "target field is deprecated"
+
+```text
+! mcp: 'target' field is deprecated; use 'agents' and 'global' instead (name=filesystem)
+```
+
+The legacy `target:` field on `mcps[]` still works but logs a warning on every sync. Replace it with `agents:` + `global:` so gaal resolves the path from the registry. See [Configure MCP servers → Migrating from `target:`](/configure/mcp-servers#migrating-from-target).
 
 ## "custom agent overrides built-in"
 

@@ -29,7 +29,8 @@ skills:
 ```yaml gaal.yaml
 mcps:
   - name: filesystem
-    target: ~/.warp/launch_configurations/mcp.json
+    agents: [warp]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]

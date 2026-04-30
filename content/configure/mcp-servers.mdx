@@ -5,12 +5,15 @@ description: "Cookbook for the mcps: block of gaal.yaml."
 
 This page is a working reference for the `mcps:` block. For the conceptual model, see [Concepts → MCP servers](/concepts/mcp-servers).
 
-## Filesystem server (inline)
+Every recipe below uses the registry-resolved form: list the target agents and the scope, and let gaal find the right JSON file. The legacy `target:` field is deprecated — see the [migration recipe](#migrating-from-target) at the bottom.
+
+## Filesystem server (inline stdio)
 
 ```yaml
 mcps:
   - name: filesystem
-    target: ~/.config/claude/claude_desktop_config.json
+    agents: [claude-code]
+    global: true
     inline:
       command: uvx
       args:
@@ -18,7 +21,7 @@ mcps:
         - ~/projects
 ```
 
-Becomes:
+Becomes (in `~/.config/claude/claude_desktop_config.json`):
 
 ```json
 {
@@ -36,7 +39,8 @@ Becomes:
 ```yaml
 mcps:
   - name: github
-    target: ~/.config/claude/claude_desktop_config.json
+    agents: [claude-code]
+    global: true
     inline:
       command: npx
       args: ["-y", "@modelcontextprotocol/server-github"]
@@ -44,54 +48,97 @@ mcps:
         GITHUB_PERSONAL_ACCESS_TOKEN: ${GITHUB_TOKEN}
 ```
 
-`${GITHUB_TOKEN}` is **not** expanded by gaal, the literal string `${GITHUB_TOKEN}` is written into the JSON. The agent process is responsible for resolving environment variables when it launches the server. See [Environment & secrets](/configure/environment-and-secrets).
+`${GITHUB_TOKEN}` is **not** expanded by gaal — the literal string `${GITHUB_TOKEN}` is written into the JSON. The agent process resolves environment variables when it launches the server. See [Environment & secrets](/configure/environment-and-secrets).
 
-## Same server, multiple agents
+## Install one server in many agents
 
-Each entry has exactly one `target`. Repeat the entry per target file:
+List the agents in a single entry. gaal fans the entry out to each one's MCP config file.
 
 ```yaml
 mcps:
   - name: filesystem
-    target: ~/.config/claude/claude_desktop_config.json
-    inline:
-      command: uvx
-      args: [mcp-server-filesystem, ~/projects]
-
-  - name: filesystem
-    target: ~/.cursor/mcp.json
-    inline:
-      command: uvx
-      args: [mcp-server-filesystem, ~/projects]
-
-  - name: filesystem
-    target: ~/.codex/mcp.json
+    agents: [claude-code, cursor, codex, windsurf]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]
 ```
 
+Or use the wildcard to install in every agent registered on this machine that exposes a global MCP config:
+
+```yaml
+mcps:
+  - name: git
+    agents: ["*"]
+    global: true
+    inline:
+      command: uvx
+      args: [mcp-server-git, --repository, ~/projects/gaal]
+```
+
+## Streamable HTTP server
+
+The current MCP spec uses a Streamable HTTP transport. Most agents don't speak it natively yet, so wrap the endpoint with [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) — it exposes the HTTP server as a stdio process the agent can launch.
+
+```yaml
+mcps:
+  - name: linear
+    agents: [claude-code, cursor]
+    global: true
+    inline:
+      command: npx
+      args:
+        - -y
+        - mcp-remote
+        - https://mcp.linear.app/mcp
+```
+
+Pass `--header KEY:VALUE` after the URL to inject auth headers, or omit them and let `mcp-remote` open a browser for OAuth on first launch.
+
+## SSE (HTTP+SSE) server
+
+For servers still on the older HTTP+SSE transport, force the bridge into SSE mode:
+
+```yaml
+mcps:
+  - name: sentry
+    agents: [claude-code]
+    global: true
+    inline:
+      command: npx
+      args:
+        - -y
+        - mcp-remote
+        - https://mcp.sentry.dev/sse
+        - --transport
+        - sse-only
+```
+
 ## Pull config from a remote URL
+
+When the upstream maintainer publishes the canonical JSON, point at it instead of duplicating the spec.
 
 ```yaml
 mcps:
   - name: github
     source: https://raw.githubusercontent.com/github/mcp-servers/main/config.json
-    target: ~/.config/claude/claude_desktop_config.json
+    agents: [claude-code, github-copilot]
+    global: true
 ```
 
-The remote file must contain an `mcpServers` object. gaal downloads it and merges the named entry into the target.
+The remote file must contain an `mcpServers` object. gaal downloads it and merges the matching entry into each target.
 
 `source:` and `inline:` are mutually exclusive.
 
 ## VS Code (Copilot, Cline, Roo)
 
-VS Code MCP entries live under the workspace or user `settings.json`:
+VS Code-family agents share `~/.vscode/settings.json` as their MCP config. Just list them like any other agent — gaal resolves all three to the same file and writes once.
 
 ```yaml
 mcps:
   - name: sequential-thinking
-    target: ~/.vscode/settings.json
+    agents: [github-copilot]
+    global: true
     inline:
       command: npx
       args:
@@ -103,21 +150,48 @@ gaal upserts under the `mcpServers` key while leaving every other VS Code settin
 
 ## Common targets
 
-| Agent | Canonical target |
-|-------|------------------|
-| Claude Desktop | `~/.config/claude/claude_desktop_config.json` |
+The destination file is resolved from the agent registry. For reference:
+
+| Agent | Resolved target (`global: true`) |
+|-------|----------------------------------|
+| Claude Code / Claude Desktop | `~/.config/claude/claude_desktop_config.json` |
 | Cursor | `~/.cursor/mcp.json` |
 | Codex | `~/.codex/mcp.json` |
 | Windsurf | `~/.codeium/windsurf/mcp_settings.json` |
 | Continue | `~/.continue/config.json` |
 | VS Code (Copilot, Cline, Roo) | `~/.vscode/settings.json` |
 | Goose | `~/.config/goose/config.yaml` |
+| Gemini CLI | `~/.gemini/settings.json` |
+| Warp | `~/.warp/launch_configurations/mcp.json` |
 
 See [Agent integrations](/agents/overview) for the full list.
 
 ## Removing an entry
 
 Removing an `mcps[]` entry from `gaal.yaml` does **not** remove it from the target file unless you pass `--prune`. Without `--prune`, gaal stops managing it but leaves the JSON intact.
+
+## Migrating from `target:`
+
+Earlier versions required an explicit `target:` path on every entry. That field still works but logs a deprecation warning. Replace each entry with `agents:` + `global:`:
+
+```yaml
+# Before
+mcps:
+  - name: filesystem
+    target: ~/.config/claude/claude_desktop_config.json
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+
+# After
+mcps:
+  - name: filesystem
+    agents: [claude-code]
+    global: true
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
 
 ## Related
 

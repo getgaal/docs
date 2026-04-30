@@ -29,7 +29,8 @@ skills:
 ```yaml gaal.yaml
 mcps:
   - name: filesystem
-    target: ~/.continue/config.json
+    agents: [continue]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]

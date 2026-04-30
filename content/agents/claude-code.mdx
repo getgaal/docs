@@ -38,7 +38,8 @@ After `gaal sync`:
 ```yaml gaal.yaml
 mcps:
   - name: filesystem
-    target: ~/.config/claude/claude_desktop_config.json
+    agents: [claude-code]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]

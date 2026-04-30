@@ -3,26 +3,62 @@ title: "MCP servers"
 description: "Upsert MCP server entries into agent configs without clobbering them."
 ---
 
-An **MCP server** is an executable that speaks the [Model Context Protocol](https://modelcontextprotocol.io). Coding agents that support MCP read a JSON config that lists the servers to launch and how to launch them.
+An **MCP server** is a process that speaks the [Model Context Protocol](https://modelcontextprotocol.io). Coding agents that support MCP read a JSON config that lists the servers to launch and how to reach them.
 
-gaal manages those entries declaratively: you write each server once in `gaal.yaml`, and gaal upserts it into the right JSON file for every agent that should see it.
+gaal manages those entries declaratively: you describe each server once in `gaal.yaml` and gaal upserts it into the right JSON file for every agent that should see it. The destination path is resolved automatically from the [agent registry](/agents/overview) — you no longer have to spell it out.
 
 ## The upsert guarantee
 
-The thing that makes MCP management painful by hand is that every agent's MCP config lives inside a larger config file. `claude_desktop_config.json` has your editor settings; `~/.vscode/settings.json` has your VS Code preferences. You can't safely overwrite the whole file.
+Every agent's MCP config lives inside a larger config file. `claude_desktop_config.json` carries other Claude Desktop settings; `~/.vscode/settings.json` carries every VS Code preference. You can't safely overwrite the whole file.
 
-gaal reads the target JSON, modifies the `mcpServers` object in place, and writes it back. Other top-level keys are preserved exactly. That's the upsert guarantee, gaal never clobbers a config it didn't author.
+gaal reads the target JSON, modifies the `mcpServers` object in place, and writes it back. Other top-level keys are preserved exactly. That's the upsert guarantee: gaal never clobbers a config it didn't author.
 
-## Two ways to define a server
+## Targeting agents, not paths
 
-### Inline
-
-The server spec lives directly in `gaal.yaml`:
+Each `mcps[]` entry says **which agents** to install the server in, and **which scope** to use. gaal looks up the destination JSON file in the registry.
 
 ```yaml
 mcps:
   - name: filesystem
-    target: ~/.config/claude/claude_desktop_config.json
+    agents: [claude-code, cursor, codex]   # explicit list
+    global: true                            # write to each agent's user-global MCP config
+    inline:
+      command: uvx
+      args: [mcp-server-filesystem, ~/projects]
+```
+
+`["*"]` is a wildcard that resolves at sync time to every registered agent that has a non-empty MCP config for the requested scope. Agents that don't expose an MCP config are skipped silently.
+
+```yaml
+mcps:
+  - name: git
+    agents: ["*"]
+    global: true
+    inline:
+      command: uvx
+      args: [mcp-server-git, --repository, ~/projects/gaal]
+```
+
+## Scope: `global` vs project
+
+| `global` | Where the entry is written |
+|----------|----------------------------|
+| `true` | The agent's **user-global** MCP config (`global_mcp_config_file` in the registry, e.g. `~/.config/claude/claude_desktop_config.json`). |
+| `false` (default) | The agent's **project-scoped** MCP config (`project_mcp_config_file`). |
+
+In the current registry every built-in agent stores its MCP entries in a single user-global file. Project-scoped MCP configs are reserved for future agents that adopt them. **Set `global: true` for every entry today** — `global: false` is a no-op for now.
+
+## Two ways to define a server
+
+### Inline (stdio)
+
+The server spec lives directly in `gaal.yaml`. Inline entries are stdio servers — gaal launches them through `command` + `args` + `env`.
+
+```yaml
+mcps:
+  - name: filesystem
+    agents: [claude-code]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]
@@ -30,41 +66,72 @@ mcps:
         FOO: bar
 ```
 
-The `inline` block follows the standard MCP server schema: `command`, `args`, `env`.
-
 ### Remote source
 
-For configs maintained elsewhere, point at a URL that returns an `mcpServers` document. gaal downloads the JSON and merges its `mcpServers` entries into the target.
+For configs maintained elsewhere, point at a URL that returns an `mcpServers` document. gaal downloads the JSON and merges the entry whose key matches `name` into each target.
 
 ```yaml
 mcps:
   - name: github
     source: https://raw.githubusercontent.com/github/mcp-servers/main/config.json
-    target: ~/.config/claude/claude_desktop_config.json
+    agents: [claude-code, github-copilot]
+    global: true
 ```
 
 `source` and `inline` are mutually exclusive.
 
-## Targets
+## HTTP and SSE servers
 
-`target:` is an absolute or `~/`-prefixed path to the JSON file you want to upsert into. Common targets:
-
-| Agent | Target |
-|-------|--------|
-| Claude Desktop | `~/.config/claude/claude_desktop_config.json` |
-| VS Code (Copilot, Cline, Roo) | `~/.vscode/settings.json` |
-| Cursor | `~/.cursor/mcp.json` |
-| Codex | `~/.codex/mcp.json` |
-| Windsurf | `~/.codeium/windsurf/mcp_settings.json` |
-| Continue | `~/.continue/config.json` |
-
-The target file doesn't need to exist beforehand, gaal will create it. Each [agent integration page](/agents/overview) lists the canonical target for that agent.
-
-## Targeting multiple agents
-
-Each `mcps[]` entry has exactly one `target`. To install the same server in two agents, declare it twice:
+The MCP spec defines two remote transports — **Streamable HTTP** and the older **HTTP+SSE**. gaal's inline schema is stdio-only, so remote servers are wired in through a stdio bridge such as [`mcp-remote`](https://www.npmjs.com/package/mcp-remote). The bridge exposes the remote endpoint as a local stdio process; the agent then talks to that process.
 
 ```yaml
+# Streamable HTTP — modern transport
+mcps:
+  - name: linear
+    agents: [claude-code, cursor]
+    global: true
+    inline:
+      command: npx
+      args:
+        - -y
+        - mcp-remote
+        - https://mcp.linear.app/mcp
+
+# HTTP+SSE — legacy transport, same bridge
+mcps:
+  - name: sentry
+    agents: [claude-code]
+    global: true
+    inline:
+      command: npx
+      args:
+        - -y
+        - mcp-remote
+        - https://mcp.sentry.dev/sse
+        - --transport
+        - sse-only
+```
+
+The bridge handles authentication redirects and session resumption on your behalf. See the `mcp-remote` README for advanced flags (custom headers, OAuth, proxies).
+
+## Behaviour during sync
+
+- The target JSON is updated in place; the named entry is added or refreshed under `mcpServers`.
+- Other top-level keys in the target file are preserved.
+- Other entries inside `mcpServers` that gaal didn't author are preserved.
+- Removing an `mcps[]` entry from `gaal.yaml` does **not** remove it from the target file unless you pass `--prune`.
+- If the target's parent directory is missing, the entry is skipped — gaal never creates an agent's config directory as a side effect.
+
+## Behaviour with `--prune`
+
+`gaal sync --prune` removes any `mcpServers` entries from gaal-managed targets that aren't in `gaal.yaml`. It only touches keys gaal could plausibly own; your other settings and other servers stay untouched. See [Pruning](/workflows/pruning) for the exact algorithm.
+
+## Migrating from `target:`
+
+Earlier versions required a `target:` path on every entry. The field is **deprecated** but still honoured for backward compatibility — gaal logs a warning when it sees one. Replace it with `agents:` + `global:` so the registry resolves the path. To install in more than one agent, list them all in the same entry instead of duplicating it.
+
+```yaml
+# Before — explicit path, one entry per agent
 mcps:
   - name: filesystem
     target: ~/.config/claude/claude_desktop_config.json
@@ -72,25 +139,15 @@ mcps:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]
 
+# After — one entry, registry-resolved, fan-out via agents:
+mcps:
   - name: filesystem
-    target: ~/.cursor/mcp.json
+    agents: [claude-code, cursor]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]
 ```
-
-This is intentional. Some servers want different arguments per agent, and the explicit per-target entry makes that obvious in the file.
-
-## Behaviour during sync
-
-- The target JSON is created if missing.
-- The named entry is added or updated under `mcpServers`.
-- Other keys in the file (and other servers under `mcpServers` that you added by hand) are preserved.
-- Removing an `mcps[]` entry from `gaal.yaml` does **not** remove it from the target file unless you pass `--prune`.
-
-## Behaviour with `--prune`
-
-`gaal sync --prune` removes any `mcpServers` entries from gaal-managed targets that aren't in `gaal.yaml`. It only touches keys gaal could plausibly own, your other config and other servers stay untouched. See [Pruning](/workflows/pruning) for the exact algorithm.
 
 ## Related
 

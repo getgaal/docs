@@ -30,7 +30,8 @@ skills:
 ```yaml gaal.yaml
 mcps:
   - name: filesystem
-    target: ~/.codeium/windsurf/mcp_settings.json
+    agents: [windsurf]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]

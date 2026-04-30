@@ -30,7 +30,8 @@ skills:
 ```yaml gaal.yaml
 mcps:
   - name: filesystem
-    target: ~/.kiro/settings/mcp.json
+    agents: [kiro-cli]
+    global: true
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]
