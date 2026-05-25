@@ -1,0 +1,83 @@
+---
+title: "Configure content"
+description: "Cookbook for the content: block of gaal.yaml."
+---
+
+`content:` copies ordinary files and directories from a source into agent or workspace locations. Use it for files that agents read directly, such as `AGENTS.md`, `CLAUDE.md`, command directories, rules, hooks, and settings.
+
+## Copy one instruction file
+
+```yaml
+content:
+  - source: my-org/agent-guidance
+    agents: [claude-code]
+    root: workspace
+    paths:
+      AGENTS.md: CLAUDE.md
+```
+
+This copies `AGENTS.md` from the source into `CLAUDE.md` in the current workspace.
+
+## Fan out to multiple agents
+
+```yaml
+content:
+  - source: my-org/agent-guidance
+    targets:
+      - agents: [claude-code]
+        scope: project
+        root: workspace
+        paths:
+          AGENTS.md: CLAUDE.md
+
+      - agents: [codex]
+        scope: project
+        root: workspace
+        paths:
+          AGENTS.md: AGENTS.md
+```
+
+Use `targets:` when each agent needs a different destination path.
+
+## Copy global agent content
+
+```yaml
+content:
+  - source: ./dotclaude
+    agents: [claude-code]
+    global: true
+    root: agent
+    paths:
+      commands/: commands/
+      settings.json: settings.json
+```
+
+With `root: agent`, destinations resolve relative to the agent's config root. For Claude Code global content, that means paths under `~/.claude/`.
+
+## Use a local source
+
+```yaml
+content:
+  - source: ./agent-files
+    agents: ["*"]
+    root: workspace
+    paths:
+      rules/: .agents/rules/
+```
+
+Relative sources resolve from the directory containing the active config file.
+
+## Safety rules
+
+- Source and destination paths must be relative.
+- Paths containing `..` are rejected.
+- Symlinks are skipped.
+- VCS metadata directories are skipped.
+- Directory writes are staged before replacing the destination.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Schema: content" icon="file-code" href="/schema/content" />
+  <Card title="gaal sync" icon="arrows-rotate" href="/cli/sync" />
+</CardGroup>

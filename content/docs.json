@@ -58,6 +58,7 @@
             "pages": [
               "configure/repositories",
               "configure/skills",
+              "configure/content",
               "configure/mcp-servers",
               "configure/custom-agents",
               "configure/environment-and-secrets"
@@ -71,6 +72,7 @@
               "workflows/dry-run",
               "workflows/pruning",
               "workflows/pinning",
+              "workflows/hooks",
               "workflows/sandbox-mode",
               "workflows/sharing-across-machines"
             ]
@@ -144,8 +146,10 @@
               "schema/schema-version",
               "schema/repositories",
               "schema/skills",
+              "schema/content",
               "schema/mcps",
               "schema/tools",
+              "schema/hooks",
               "schema/telemetry"
             ]
           }

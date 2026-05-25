@@ -90,6 +90,8 @@ repositories:
 
 - A first sync clones (or extracts) into the destination path.
 - Subsequent syncs fast-forward or re-extract if the URL or version changed.
+- Existing non-empty destinations are refused before clone.
+- Existing Git checkouts keep using their configured `origin`; a mismatch with `url:` is reported instead of silently retargeting the checkout.
 - Removing an entry from `gaal.yaml` does **not** delete the directory. `--prune` ignores repositories.
 
 ## Related

@@ -86,6 +86,19 @@ skills:
 
 Authentication uses your local SSH agent.
 
+## Install into a subdirectory
+
+Use `target_subdir:` when you want selected skills placed under a folder inside the resolved agent skills directory.
+
+```yaml
+skills:
+  - source: ./company-skills
+    agents: [codex]
+    target_subdir: team
+```
+
+The subdirectory must be relative and cannot contain `..`.
+
 ## Force install into every registered agent
 
 By default, the `["*"]` wildcard expands only to agents detected on this machine. If you want gaal to populate skill directories for agents that aren't installed yet (for example, to pre-stage a fresh machine), use `--force`:

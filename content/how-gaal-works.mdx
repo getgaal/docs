@@ -20,17 +20,19 @@ gaal ships with a built-in registry of every supported agent: where its skills l
 
 You can extend the registry with your own entries. See [Custom agents](/configure/custom-agents).
 
-## Three resource types, three guarantees
+## Resource types and guarantees
 
-Every entry in `gaal.yaml` falls into one of three buckets, and each bucket comes with a strict guarantee:
+Every entry in `gaal.yaml` falls into a small set of resource types, and each type has a clear boundary:
 
 | Resource | Guarantee |
 |----------|-----------|
 | **Repositories** | gaal owns the entire directory at the configured path. Sync clones or updates it; nothing else is written there. |
 | **Skills** | gaal owns the named skill directories it installs. Skills it didn't install are left alone unless you pass `--prune`. |
+| **Content** | gaal copies only the configured path mappings. Unsafe relative paths, symlinks, and VCS metadata are skipped. |
 | **MCP servers** | gaal **upserts** entries inside the target JSON file. Other keys in that file (your editor settings, other servers you added by hand) are never touched. |
+| **Hooks** | gaal runs only the commands you declare, in order, around a one-shot or service sync. |
 
-The MCP guarantee is the one that matters most: gaal will not clobber your `claude_desktop_config.json`. It reads, modifies the `mcpServers` object in place, and writes back.
+The MCP guarantee is the one that matters most: gaal will not clobber your agent config. It reads, modifies the MCP section in place, and writes back.
 
 ## Scopes
 

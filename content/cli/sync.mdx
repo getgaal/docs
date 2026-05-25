@@ -7,7 +7,7 @@ description: "Reconcile every resource in gaal.yaml against the filesystem."
 gaal sync [flags]
 ```
 
-`sync` is the workhorse. It runs the audit, computes the plan, and applies it: clones or updates repositories, installs or refreshes skills, and upserts MCP entries.
+`sync` is the workhorse. It runs the audit, computes the plan, and applies it: clones or updates repositories, installs or refreshes skills, copies configured content, runs hooks, and upserts MCP entries.
 
 ## Flags
 
@@ -68,7 +68,7 @@ gaal --log-file /var/log/gaal.json sync --service --interval 5m
 $ gaal sync
 ✓ src/example          cloned
 ✓ code-review          installed in claude-code, cursor
-✓ filesystem           upserted in claude_desktop_config.json
+✓ filesystem           upserted in ~/.claude.json
 sync complete in 1.2s
 ```
 

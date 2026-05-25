@@ -18,9 +18,13 @@ plan:
     + install code-review          → claude-code, cursor
     ~ update  git-helper           → claude-code (v1.2 → v1.3)
     = unchanged refactor           → claude-code
+  content
+    + copy    AGENTS.md            → CLAUDE.md
   mcps
-    + upsert  filesystem           → ~/.config/claude/claude_desktop_config.json
-    = unchanged github             → ~/.config/claude/claude_desktop_config.json
+    + upsert  filesystem           → ~/.claude.json
+    = unchanged github             → ~/.claude.json
+  pre-sync hooks
+    > run     snapshot dotfiles
 ```
 
 The legend:

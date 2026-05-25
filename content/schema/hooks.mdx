@@ -1,0 +1,90 @@
+---
+title: "hooks"
+description: "Commands that run before and after gaal sync."
+---
+
+```yaml
+hooks:
+  pre-sync:
+    - name: <string>             # optional
+      command: <string>
+      args: <[string]>           # optional
+      cwd: <string>              # optional
+      os: <[linux|darwin|windows]>
+      timeout: <duration>        # optional, default 5m
+      continue_on_error: <bool>  # optional, default false
+      env: <map[string,string]>  # optional
+
+  post-sync:
+    - command: <string>
+      args: <[string]>
+```
+
+## Type
+
+`object`
+
+## Required
+
+No. Omit `hooks:` unless you need local commands around sync.
+
+## Phases
+
+| Phase | Runs |
+|-------|------|
+| `pre-sync` | After planning and before gaal writes any resource. |
+| `post-sync` | After sync and optional prune have completed successfully. |
+
+A failing `pre-sync` hook aborts the sync unless `continue_on_error: true` is set. A failing `post-sync` hook makes the command fail after all sync work has already completed.
+
+## Hook fields
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `name` | string | no | Label shown in plans and logs. |
+| `command` | string | yes | Executable to run. No shell is involved. |
+| `args` | array of strings | no | Passed verbatim after expansion. |
+| `cwd` | string | no | Defaults to gaal's working directory. |
+| `os` | array | no | Restrict to `linux`, `darwin`, or `windows`. |
+| `timeout` | duration string | no | Go duration such as `30s`, `2m`, or `1h`. |
+| `continue_on_error` | bool | no | Keep running the phase after a non-zero exit. |
+| `env` | map[string]string | no | Added on top of the inherited environment. |
+
+Tokens beginning with `~/`, `$VAR`, or `${VAR}` are expanded in `args`, `cwd`, and `env` values.
+
+## Example
+
+```yaml
+hooks:
+  pre-sync:
+    - name: snapshot dotfiles
+      command: ./scripts/snapshot.sh
+      os: [linux, darwin]
+      timeout: 1m
+      continue_on_error: true
+
+  post-sync:
+    - name: refresh local docs
+      command: git
+      args: ["-C", "~/docs", "pull", "--ff-only"]
+```
+
+## Environment
+
+Hooks inherit the process environment plus:
+
+| Variable | Value |
+|----------|-------|
+| `GAAL_HOOK_PHASE` | `pre-sync` or `post-sync` |
+| `GAAL_PLANNED_REPOS` / `GAAL_CHANGED_REPOS` | Newline-separated repository paths. |
+| `GAAL_PLANNED_SKILLS` / `GAAL_CHANGED_SKILLS` | Newline-separated `agent:source` rows. |
+| `GAAL_PLANNED_MCPS` / `GAAL_CHANGED_MCPS` | Newline-separated MCP names. |
+| `GAAL_HAS_CHANGES` | `1` when the plan has work to do. |
+| `GAAL_HAS_ERRORS` | `1` when planning found errors. |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Sync hooks workflow" icon="terminal" href="/workflows/hooks" />
+  <Card title="gaal sync" icon="arrows-rotate" href="/cli/sync" />
+</CardGroup>

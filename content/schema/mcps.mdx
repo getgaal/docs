@@ -1,6 +1,6 @@
 ---
 title: "mcps"
-description: "MCP server entries upserted into agent JSON configs."
+description: "MCP server entries upserted into agent config files."
 ---
 
 ```yaml
@@ -10,9 +10,12 @@ mcps:
     global: <bool>           # optional, default false (set true for current agents)
     source: <url>            # mutually exclusive with inline
     inline:                  # mutually exclusive with source
+      type: <stdio|http|sse> # optional
       command: <string>
       args: <[string]>
       env: <map[string,string]>
+      url: <string>
+      headers: <map>
     merge: <bool>            # optional, default true
     target: <path>           # deprecated — use agents instead
 ```
@@ -55,7 +58,7 @@ The destination JSON file is then looked up in the [agent registry](/agents/over
 
 | Value | Resolved path |
 |-------|---------------|
-| `true` | `global_mcp_config_file` from the registry — the agent's user-global MCP config (e.g. `~/.config/claude/claude_desktop_config.json`). |
+| `true` | `global_mcp_config_file` from the registry — the agent's user-global MCP config (e.g. `~/.claude.json`). |
 | `false` | `project_mcp_config_file` from the registry — the agent's workspace-scoped MCP config. |
 
 In the current registry every built-in agent only ships a `global_mcp_config_file`. Set `global: true` on every entry until per-project MCP configs land. With `global: false` (the YAML default) gaal silently skips the entry for every agent that has no project-scoped MCP path.
@@ -76,13 +79,29 @@ Mutually exclusive with `inline`.
 |-------|------|----------|
 | `inline` | object | conditionally |
 
-The MCP server spec, written directly in `gaal.yaml`. Inline entries are stdio servers — for HTTP or SSE transports use a stdio bridge (see [Configure → Streamable HTTP server](/configure/mcp-servers#streamable-http-server)).
+The MCP server spec, written directly in `gaal.yaml`. Inline entries can describe stdio servers or native HTTP/SSE endpoints, depending on what the target agent supports.
 
 | Subfield | Type | Required |
 |----------|------|----------|
-| `command` | string | yes |
+| `type` | string | no |
+| `command` | string | conditionally |
 | `args` | array of strings | no |
 | `env` | map[string]string | no |
+| `url` | string | conditionally |
+| `headers` | map[string, HeaderValue] | no |
+
+Use `command` for stdio servers. Use `url` for HTTP or SSE servers. `type` defaults to stdio when `command` is set, and HTTP when `url` is set.
+
+Header values may be plain scalars or objects:
+
+```yaml
+headers:
+  X-Team: platform
+  Authorization:
+    env: LINEAR_API_KEY
+```
+
+Prefer `env:` for secrets. gaal writes the environment variable name into formats that support env-backed headers.
 
 Mutually exclusive with `source`. Exactly one of `source` or `inline` must be set per entry.
 
@@ -114,24 +133,24 @@ mcps:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]
 
-  # Streamable HTTP server, bridged through mcp-remote.
+  # Native HTTP server with an env-backed header.
   - name: linear
     agents: [claude-code]
     global: true
     inline:
-      command: npx
-      args:
-        - -y
-        - mcp-remote
-        - https://mcp.linear.app/mcp
+      type: http
+      url: https://mcp.linear.app/mcp
+      headers:
+        Authorization:
+          env: LINEAR_API_KEY
 
-  # SSE server, bridged through mcp-remote.
+  # SSE server.
   - name: sentry
     agents: [claude-code]
     global: true
     inline:
-      command: npx
-      args: [-y, mcp-remote, https://mcp.sentry.dev/sse, --transport, sse-only]
+      type: sse
+      url: https://mcp.sentry.dev/sse
 
   # Remote source, every detected agent.
   - name: github
@@ -147,6 +166,7 @@ mcps:
 - Other entries inside `mcpServers` that gaal didn't author are preserved.
 - Removing an entry from `gaal.yaml` does **not** remove it from the target unless you pass `--prune`.
 - gaal does **not** expand `${VAR}` references in `args:` or `env:`. The agent process resolves them when launching the server.
+- Header `env:` values name environment variables; they do not contain the secret itself.
 - When the resolved target's parent directory is missing, gaal silently skips the entry — it never creates an agent's config directory as a side effect.
 
 ## Related

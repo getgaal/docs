@@ -25,13 +25,20 @@ repositories:
   # local-path: { type, url, version }
 
 skills:
-  # - { source, agents, global, select }
+  # - { source, agents, global, target_subdir, select }
+
+content:
+  # - { source, agents, global, root, paths }
 
 mcps:
   # - { name, agents, global, source | inline }
 
 tools:
   # - <name> or { name, hint }
+
+hooks:
+  # pre-sync: [...]
+  # post-sync: [...]
 
 telemetry: false   # opt-in, user/system scope only
 ```
@@ -41,8 +48,10 @@ telemetry: false   # opt-in, user/system scope only
 | [`schema`](/schema/schema-version) | integer | recommended | Config version, always `1` for the current gaal release. Stable forever. |
 | [`repositories`](/schema/repositories) | map | no | VCS-managed sources cloned into your workspace. |
 | [`skills`](/schema/skills) | array | no | `SKILL.md` collections to install per agent. |
-| [`mcps`](/schema/mcps) | array | no | MCP server entries upserted into agent JSON configs. |
+| [`content`](/schema/content) | array | no | Generic file and directory mappings for agent instructions, rules, commands, and settings. |
+| [`mcps`](/schema/mcps) | array | no | MCP server entries upserted into agent config files. |
 | [`tools`](/schema/tools) | array | no | CLI tools expected on `PATH`, reported by `gaal doctor`. |
+| [`hooks`](/schema/hooks) | object | no | Commands that run before and after `gaal sync`. |
 | [`telemetry`](/schema/telemetry) | bool | no | Opt-in anonymous usage telemetry. Off by default. |
 
 Every key is independent. A file with only `skills:` is a valid gaal.yaml and a sync only touches skills.
@@ -72,6 +81,13 @@ skills:
     agents: [claude-code, cursor]
     global: false
 
+content:
+  - source: ./agent-files
+    agents: [claude-code]
+    root: workspace
+    paths:
+      AGENTS.md: CLAUDE.md
+
 mcps:
   - name: filesystem
     agents: [claude-code]
@@ -89,6 +105,11 @@ tools:
   - gh
   - name: rtk
     hint: "cargo install rtk"
+
+hooks:
+  post-sync:
+    - command: git
+      args: ["-C", "~/docs", "pull", "--ff-only"]
 ```
 
 ## Validate before sync

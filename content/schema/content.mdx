@@ -1,0 +1,117 @@
+---
+title: "content"
+description: "Generic file and directory sync for agent instructions, rules, commands, and settings."
+---
+
+```yaml
+content:
+  - source: <string>
+    agents: <[string] | ["*"]>     # shorthand form
+    global: <bool>                 # shorthand form, default false
+    root: <agent|workspace>        # shorthand form, default workspace
+    paths:
+      <source-relative>: <destination-relative>
+
+    targets:                       # explicit form
+      - agents: <[string] | ["*"]>
+        scope: <project|global>
+        root: <agent|workspace>
+        paths:
+          <source-relative>: <destination-relative>
+```
+
+## Type
+
+`array[ContentEntry]`
+
+## Required
+
+No. Omit `content:` if you only manage repositories, skills, and MCP servers.
+
+## What it is for
+
+Use `content:` for files an agent reads directly but that are not `SKILL.md` packages: instruction files, command directories, rules, hooks, templates, and settings.
+
+`skills:` remains the right place for native skill collections. `content:` is the escape hatch for everything else.
+
+## Entry fields
+
+### `source`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `source` | string | yes |
+
+Accepts GitHub shorthand, HTTPS URLs, SSH Git URLs, and local paths. Remote sources are cached under gaal's cache directory before paths are copied out.
+
+### `targets`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `targets` | array of target objects | no |
+
+Use `targets:` when one source needs to fan out to multiple agents, scopes, roots, or path maps.
+
+### Shorthand fields
+
+When `targets:` is omitted, the top-level `agents`, `global`, `root`, and `paths` fields define one target.
+
+| Field | Type | Required | Default |
+|-------|------|----------|---------|
+| `agents` | array of strings | yes | none |
+| `global` | bool | no | `false` |
+| `root` | `agent` or `workspace` | no | `workspace` |
+| `paths` | map[string]string | yes | none |
+
+### Target fields
+
+| Field | Type | Required | Default |
+|-------|------|----------|---------|
+| `agents` | array of strings | yes | none |
+| `scope` | `project` or `global` | no | `project` |
+| `root` | `agent` or `workspace` | no | `workspace` |
+| `paths` | map[string]string | yes | none |
+
+`root: workspace` writes relative to the current project. `root: agent` writes relative to the agent config root inferred from the registry.
+
+## Example
+
+```yaml
+content:
+  - source: my-org/agent-guidance
+    targets:
+      - agents: [claude-code]
+        scope: project
+        root: workspace
+        paths:
+          AGENTS.md: CLAUDE.md
+
+      - agents: [codex]
+        scope: project
+        root: workspace
+        paths:
+          AGENTS.md: AGENTS.md
+
+  - source: ./dotclaude
+    agents: [claude-code]
+    global: true
+    root: agent
+    paths:
+      commands/: commands/
+      settings.json: settings.json
+```
+
+## Safety
+
+- Source and destination paths must be relative.
+- `..` path segments are rejected.
+- Symlinks and non-regular files are skipped.
+- VCS metadata directories are skipped.
+- Directory copies stage into a temporary sibling and then replace the destination.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure content" icon="copy" href="/configure/content" />
+  <Card title="The gaal.yaml file" icon="file-code" href="/concepts/gaal-yaml" />
+</CardGroup>

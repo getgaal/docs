@@ -3,7 +3,7 @@ title: "Agent integrations"
 description: "Every coding agent gaal supports out of the box."
 ---
 
-gaal ships with a built-in registry of 21 coding agents plus a vendor-neutral `generic` fallback. For each one, the registry knows where skills live and where to upsert MCP server entries. That's what makes `agents: ["*"]` in your `gaal.yaml` work.
+gaal ships with a built-in registry of supported coding agents plus a vendor-neutral `generic` fallback. For each one, the registry knows where skills live and where to upsert MCP server entries. That's what makes `agents: ["*"]` in your `gaal.yaml` work.
 
 ## Supported agents
 
@@ -35,9 +35,9 @@ gaal ships with a built-in registry of 21 coding agents plus a vendor-neutral `g
 
 | Agent | Project skills | Global skills | MCP config |
 |-------|----------------|---------------|------------|
-| Claude Code | `.claude/skills` | `~/.claude/skills` | `~/.config/claude/claude_desktop_config.json` |
+| Claude Code | `.claude/skills` | `~/.claude/skills` | `~/.claude.json` |
 | Cursor | `.agents/skills` (generic) | `~/.cursor/skills` | `~/.cursor/mcp.json` |
-| Codex | `.agents/skills` (generic) | `~/.codex/skills` | `~/.codex/mcp.json` |
+| Codex | `.agents/skills` (generic) | `~/.codex/skills` | `~/.codex/config.toml` |
 | GitHub Copilot | `.github/skills` | `~/.copilot/skills` | `~/.vscode/settings.json` |
 | Windsurf | `.windsurf/skills` | `~/.codeium/windsurf/skills` | `~/.codeium/windsurf/mcp_settings.json` |
 | Continue | `.continue/skills` | `~/.continue/skills` | `~/.continue/config.json` |
