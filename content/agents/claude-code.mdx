@@ -11,7 +11,7 @@ description: "Anthropic's terminal coding agent."
 |----------|------|
 | Project skills | `.claude/skills` |
 | Global skills | `~/.claude/skills` |
-| MCP config | `~/.config/claude/claude_desktop_config.json` |
+| MCP config | `~/.claude.json` |
 | Audit search (project) | `.claude/skills`, `.agents/skills`, `.github/skills` |
 | Audit search (global) | `~/.claude/skills`, `~/.agents/skills`, `~/.copilot/skills` |
 | Package-manager search | `~/.claude/plugins/cache` |
@@ -45,7 +45,7 @@ mcps:
       args: [mcp-server-filesystem, ~/projects]
 ```
 
-The entry is upserted under `mcpServers` in `claude_desktop_config.json`. Other keys in the file are preserved.
+The entry is upserted under `mcpServers` in `~/.claude.json`. Other keys in the file are preserved.
 
 ## Detecting installation
 
@@ -54,7 +54,7 @@ $ gaal agents claude-code
 claude-code (installed)
   project skills:  .claude/skills
   global skills:   ~/.claude/skills
-  mcp config:      ~/.config/claude/claude_desktop_config.json (exists)
+  mcp config:      ~/.claude.json (exists)
   pm cache:        ~/.claude/plugins/cache
 ```
 

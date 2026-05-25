@@ -21,7 +21,7 @@ mcps:
         - ~/projects
 ```
 
-Becomes (in `~/.config/claude/claude_desktop_config.json`):
+Becomes (in `~/.claude.json`):
 
 ```json
 {
@@ -76,9 +76,9 @@ mcps:
       args: [mcp-server-git, --repository, ~/projects/gaal]
 ```
 
-## Streamable HTTP server
+## Native HTTP server
 
-The current MCP spec uses a Streamable HTTP transport. Most agents don't speak it natively yet, so wrap the endpoint with [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) — it exposes the HTTP server as a stdio process the agent can launch.
+For agents that accept remote MCP entries, write the endpoint directly:
 
 ```yaml
 mcps:
@@ -86,18 +86,31 @@ mcps:
     agents: [claude-code, cursor]
     global: true
     inline:
-      command: npx
-      args:
-        - -y
-        - mcp-remote
-        - https://mcp.linear.app/mcp
+      type: http
+      url: https://mcp.linear.app/mcp
 ```
 
-Pass `--header KEY:VALUE` after the URL to inject auth headers, or omit them and let `mcp-remote` open a browser for OAuth on first launch.
+## HTTP server with headers
+
+```yaml
+mcps:
+  - name: memory
+    agents: [claude-code, codex]
+    global: true
+    inline:
+      type: http
+      url: https://memory.example.com/mcp
+      headers:
+        X-Team: platform
+        Authorization:
+          env: MEMORY_TOKEN
+```
+
+Scalar headers are written as static values. Use `env:` for secrets; gaal writes the environment variable name for target formats that support env-backed headers.
 
 ## SSE (HTTP+SSE) server
 
-For servers still on the older HTTP+SSE transport, force the bridge into SSE mode:
+For servers still on the older HTTP+SSE transport:
 
 ```yaml
 mcps:
@@ -105,14 +118,11 @@ mcps:
     agents: [claude-code]
     global: true
     inline:
-      command: npx
-      args:
-        - -y
-        - mcp-remote
-        - https://mcp.sentry.dev/sse
-        - --transport
-        - sse-only
+      type: sse
+      url: https://mcp.sentry.dev/sse
 ```
+
+If your target agent does not support native remote MCP servers yet, keep using a stdio bridge such as `mcp-remote` under `command` and `args`.
 
 ## Pull config from a remote URL
 
@@ -154,9 +164,10 @@ The destination file is resolved from the agent registry. For reference:
 
 | Agent | Resolved target (`global: true`) |
 |-------|----------------------------------|
-| Claude Code / Claude Desktop | `~/.config/claude/claude_desktop_config.json` |
+| Claude Code | `~/.claude.json` |
+| Claude Desktop | `~/Library/Application Support/Claude/claude_desktop_config.json` |
 | Cursor | `~/.cursor/mcp.json` |
-| Codex | `~/.codex/mcp.json` |
+| Codex | `~/.codex/config.toml` |
 | Windsurf | `~/.codeium/windsurf/mcp_settings.json` |
 | Continue | `~/.continue/config.json` |
 | VS Code (Copilot, Cline, Roo) | `~/.vscode/settings.json` |
@@ -178,7 +189,7 @@ Earlier versions required an explicit `target:` path on every entry. That field 
 # Before
 mcps:
   - name: filesystem
-    target: ~/.config/claude/claude_desktop_config.json
+    target: ~/.claude.json
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]

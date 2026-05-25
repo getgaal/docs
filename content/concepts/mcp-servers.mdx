@@ -9,7 +9,7 @@ gaal manages those entries declaratively: you describe each server once in `gaal
 
 ## The upsert guarantee
 
-Every agent's MCP config lives inside a larger config file. `claude_desktop_config.json` carries other Claude Desktop settings; `~/.vscode/settings.json` carries every VS Code preference. You can't safely overwrite the whole file.
+Every agent's MCP config lives inside a larger config file. Claude Code stores MCP servers in `~/.claude.json`; VS Code-family agents use `~/.vscode/settings.json`; Codex uses `~/.codex/config.toml`. You can't safely overwrite the whole file.
 
 gaal reads the target JSON, modifies the `mcpServers` object in place, and writes it back. Other top-level keys are preserved exactly. That's the upsert guarantee: gaal never clobbers a config it didn't author.
 
@@ -43,16 +43,16 @@ mcps:
 
 | `global` | Where the entry is written |
 |----------|----------------------------|
-| `true` | The agent's **user-global** MCP config (`global_mcp_config_file` in the registry, e.g. `~/.config/claude/claude_desktop_config.json`). |
+| `true` | The agent's **user-global** MCP config (`global_mcp_config_file` in the registry, e.g. `~/.claude.json`). |
 | `false` (default) | The agent's **project-scoped** MCP config (`project_mcp_config_file`). |
 
 In the current registry every built-in agent stores its MCP entries in a single user-global file. Project-scoped MCP configs are reserved for future agents that adopt them. **Set `global: true` for every entry today** — `global: false` is a no-op for now.
 
 ## Two ways to define a server
 
-### Inline (stdio)
+### Inline
 
-The server spec lives directly in `gaal.yaml`. Inline entries are stdio servers — gaal launches them through `command` + `args` + `env`.
+The server spec lives directly in `gaal.yaml`. Stdio servers use `command` + `args` + `env`.
 
 ```yaml
 mcps:
@@ -82,37 +82,29 @@ mcps:
 
 ## HTTP and SSE servers
 
-The MCP spec defines two remote transports — **Streamable HTTP** and the older **HTTP+SSE**. gaal's inline schema is stdio-only, so remote servers are wired in through a stdio bridge such as [`mcp-remote`](https://www.npmjs.com/package/mcp-remote). The bridge exposes the remote endpoint as a local stdio process; the agent then talks to that process.
+The MCP spec defines two remote transports: Streamable HTTP and the older HTTP+SSE. gaal can write native remote entries for agents that support them.
 
 ```yaml
-# Streamable HTTP — modern transport
 mcps:
   - name: linear
     agents: [claude-code, cursor]
     global: true
     inline:
-      command: npx
-      args:
-        - -y
-        - mcp-remote
-        - https://mcp.linear.app/mcp
+      type: http
+      url: https://mcp.linear.app/mcp
+      headers:
+        Authorization:
+          env: LINEAR_API_KEY
 
-# HTTP+SSE — legacy transport, same bridge
-mcps:
   - name: sentry
     agents: [claude-code]
     global: true
     inline:
-      command: npx
-      args:
-        - -y
-        - mcp-remote
-        - https://mcp.sentry.dev/sse
-        - --transport
-        - sse-only
+      type: sse
+      url: https://mcp.sentry.dev/sse
 ```
 
-The bridge handles authentication redirects and session resumption on your behalf. See the `mcp-remote` README for advanced flags (custom headers, OAuth, proxies).
+If an agent does not support native remote MCP entries yet, use a stdio bridge such as [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) under `command` and `args`.
 
 ## Behaviour during sync
 
@@ -134,7 +126,7 @@ Earlier versions required a `target:` path on every entry. The field is **deprec
 # Before — explicit path, one entry per agent
 mcps:
   - name: filesystem
-    target: ~/.config/claude/claude_desktop_config.json
+    target: ~/.claude.json
     inline:
       command: uvx
       args: [mcp-server-filesystem, ~/projects]

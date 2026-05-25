@@ -115,6 +115,8 @@ repositories:
 
 - A first sync clones (or extracts) each entry into its destination path.
 - A subsequent sync fast-forwards or re-extracts based on `version:` and the remote state.
+- If the destination already exists and is not empty, gaal refuses to clone into it.
+- For existing Git checkouts, the working copy's `origin` is authoritative. If `gaal.yaml` and `origin` disagree, sync stops with a remote URL mismatch error.
 - `--dry-run` reports `+ clone`, `~ update`, or `= unchanged` per entry.
 - Removing a repository entry from `gaal.yaml` does **not** delete its directory, `--prune` ignores repositories.
 

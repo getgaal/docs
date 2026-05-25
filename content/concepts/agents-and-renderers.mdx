@@ -11,7 +11,7 @@ gaal ships with a built-in registry that records, for every supported agent:
 
 - **Project skills directory**, where skills live inside a project (e.g. `.claude/skills`, `.cursor/skills`).
 - **Global skills directory**, where skills live in the user's home (e.g. `~/.claude/skills`).
-- **MCP config file**, the JSON file gaal upserts into (e.g. `~/.config/claude/claude_desktop_config.json`).
+- **MCP config file**, the JSON, TOML, or YAML file gaal upserts into (e.g. `~/.claude.json`).
 - **Skills search paths**, additional directories `gaal audit` scans when discovering existing skills.
 - **Package-manager search paths**, vendor-specific directories (`~/.cursor/extensions`, `~/.claude/plugins/cache`) where extension-installed skills may live.
 
@@ -20,9 +20,9 @@ You can list what's in the registry at any time:
 ```bash
 $ gaal agents
 NAME             INSTALLED  PROJECT_SKILLS    GLOBAL_SKILLS                MCP_CONFIG
-claude-code      yes        .claude/skills    ~/.claude/skills             ~/.config/claude/claude_desktop_config.json
+claude-code      yes        .claude/skills    ~/.claude/skills             ~/.claude.json
 cursor           yes        .agents/skills    ~/.cursor/skills             ~/.cursor/mcp.json
-codex            yes        .agents/skills    ~/.codex/skills              ~/.codex/mcp.json
+codex            yes        .agents/skills    ~/.codex/skills              ~/.codex/config.toml
 github-copilot   no         .github/skills    ~/.copilot/skills            ~/.vscode/settings.json
 …
 ```

@@ -12,13 +12,15 @@ This tab is the formal reference for `gaal.yaml`. For prose explanations and des
 | `schema` | integer | recommended | [Schema version](/schema/schema-version) |
 | `repositories` | map | no | [Repositories](/schema/repositories) |
 | `skills` | array | no | [Skills](/schema/skills) |
+| `content` | array | no | [Content](/schema/content) |
 | `mcps` | array | no | [MCPs](/schema/mcps) |
 | `tools` | array | no | [Tools](/schema/tools) |
+| `hooks` | object | no | [Hooks](/schema/hooks) |
 | `telemetry` | bool | no | [Telemetry](/schema/telemetry) |
 
 ## Generating the JSON Schema
 
-`gaal schema` writes the canonical JSON Schema (draft-07) for `gaal.yaml`:
+`gaal schema` writes the canonical JSON Schema (draft 2020-12) for `gaal.yaml`:
 
 ```bash
 gaal schema -f schema.json

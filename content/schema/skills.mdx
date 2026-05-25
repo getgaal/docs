@@ -8,6 +8,7 @@ skills:
   - source: <string>
     agents: <[string] | ["*"]>
     global: <bool>          # optional, default false
+    target_subdir: <string> # optional
     select: <[string]>      # optional
     tools: <[ToolEntry]>    # optional
 ```
@@ -60,6 +61,16 @@ Either a list of registry names (`[claude-code, cursor, codex]`) or the wildcard
 | `false` | `./.<agent>/skills/<name>` (per-project) |
 | `true` | `~/.<agent>/skills/<name>` (per-user) |
 
+### `target_subdir`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `target_subdir` | string | no |
+
+Optional subdirectory under the resolved agent skills directory. Use it when an agent supports grouping skills, or when you want two entries from the same source to land in different folders.
+
+The value must be relative and cannot contain `..`.
+
 ### `select`
 
 | Field | Type | Required |
@@ -92,6 +103,10 @@ skills:
   - source: ./company-skills
     agents: [claude-code, cursor]
     global: false
+
+  - source: ./company-skills
+    agents: [codex]
+    target_subdir: team
 
   - source: obra/superpowers
     agents: ["*"]

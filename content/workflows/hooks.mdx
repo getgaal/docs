@@ -1,0 +1,72 @@
+---
+title: "Sync hooks"
+description: "Run local commands before and after gaal sync."
+---
+
+Hooks let a config wrap sync with local commands. Common uses are snapshotting dotfiles before a sync, refreshing a checked-out docs repo afterwards, or rebuilding files generated from synced content.
+
+## Basic shape
+
+```yaml
+hooks:
+  pre-sync:
+    - name: snapshot dotfiles
+      command: ./scripts/snapshot.sh
+      timeout: 1m
+      continue_on_error: true
+
+  post-sync:
+    - name: refresh docs
+      command: git
+      args: ["-C", "~/docs", "pull", "--ff-only"]
+```
+
+Hooks use exec form: `command` plus `args`. There is no shell, so pipes, redirects, and globs are not interpreted. Put shell logic in a script and call that script.
+
+## Order
+
+1. gaal builds the sync plan.
+2. `pre-sync` hooks run in order.
+3. Sync applies repositories, skills, content, and MCPs.
+4. `--prune` runs, when requested.
+5. gaal prints the sync summary.
+6. `post-sync` hooks run in order.
+
+`post-sync` only runs after a successful sync. It is skipped when planning, sync, or prune fails.
+
+## Platform filters
+
+```yaml
+hooks:
+  pre-sync:
+    - command: ./scripts/macos-only.sh
+      os: [darwin]
+```
+
+Use `os:` to restrict a hook to `linux`, `darwin`, or `windows`.
+
+## Environment
+
+Every hook sees `GAAL_HOOK_PHASE`, `GAAL_HAS_CHANGES`, `GAAL_HAS_ERRORS`, and newline-separated lists of planned or changed resources. See [Schema: hooks](/schema/hooks#environment) for the full list.
+
+## Dry-run
+
+`gaal sync --dry-run` shows hooks in the plan but never executes them.
+
+```text
+pre-sync hooks
+  > run     snapshot dotfiles
+post-sync hooks
+  > run     refresh docs
+```
+
+## Service mode
+
+In service mode, hooks run on every iteration. A failing `pre-sync` hook skips that iteration. A failing `post-sync` hook is logged and the loop continues.
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Schema: hooks" icon="file-code" href="/schema/hooks" />
+  <Card title="gaal sync" icon="arrows-rotate" href="/cli/sync" />
+</CardGroup>

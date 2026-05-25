@@ -9,7 +9,7 @@ By the end of this page you'll have a working `gaal.yaml`, every detected agent 
 
 ```bash
 $ gaal version
-gaal v0.1.0
+gaal v0.3.0
 built 2026-04-18T09:00:00Z
 ```
 
@@ -28,7 +28,7 @@ discovered:
   skills (global)
     ~/.claude/skills/git-helper    (claude-code)
   mcps
-    ~/.config/claude/claude_desktop_config.json
+    ~/.claude.json
       filesystem, git
 ```
 
@@ -73,7 +73,7 @@ plan:
     + install code-review          → claude-code, cursor
     = unchanged git-helper         → claude-code
   mcps
-    + upsert  filesystem           → claude_desktop_config.json
+    + upsert  filesystem           → ~/.claude.json
 ```
 
 Exit codes: **0** = nothing to do, **1** = changes pending, **2** = error.
@@ -84,7 +84,7 @@ Exit codes: **0** = nothing to do, **1** = changes pending, **2** = error.
 $ gaal sync
 ✓ src/example          cloned
 ✓ code-review          installed in claude-code, cursor
-✓ filesystem           upserted in claude_desktop_config.json
+✓ filesystem           upserted in ~/.claude.json
 sync complete in 1.2s
 ```
 
@@ -98,7 +98,7 @@ skills
   code-review          claude-code, cursor
   git-helper           claude-code
 mcps
-  filesystem           ~/.config/claude/claude_desktop_config.json
+  filesystem           ~/.claude.json
 ```
 
 ```bash
