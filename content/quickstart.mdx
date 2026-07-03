@@ -78,7 +78,25 @@ plan:
 
 Exit codes: **0** = nothing to do, **1** = changes pending, **2** = error.
 
-## 5. Sync for real
+## 5. Optional: add a registry skill
+
+You can search the default registry without changing your config:
+
+```bash
+gaal skill search frontend
+```
+
+For the default `skills.sh` registry, this uses `npx skills find` behind the scenes. Make sure `npx` is available on `PATH`. You do not need `VERCEL_OIDC_TOKEN` or skills.sh API auth.
+
+Install adds the selected skill to `gaal.yaml` and runs sync by default:
+
+```bash
+gaal skill install frontend-design
+```
+
+Use `--project` if the skill should live only in this repo, or `--no-sync` if you want to review the YAML before syncing.
+
+## 6. Sync for real
 
 ```bash
 $ gaal sync
@@ -88,7 +106,7 @@ $ gaal sync
 sync complete in 1.2s
 ```
 
-## 6. Check your work
+## 7. Check your work
 
 ```bash
 $ gaal status
@@ -116,6 +134,9 @@ Commit `gaal.yaml` to your dotfiles repo and `gaal sync` will reproduce this exa
 <CardGroup cols={2}>
   <Card title="How gaal works" icon="diagram-project" href="/how-gaal-works">
     The mental model behind sync, audit, and renderers.
+  </Card>
+  <Card title="Find skills" icon="magnifying-glass" href="/cli/skill">
+    Search and install registry skills.
   </Card>
   <Card title="Sharing across machines" icon="cloud-arrow-up" href="/workflows/sharing-across-machines">
     The dotfiles pattern in detail.

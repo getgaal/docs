@@ -121,6 +121,7 @@
             "group": "CLI reference",
             "pages": [
               "cli/overview",
+              "cli/skill",
               "cli/sync",
               "cli/status",
               "cli/agents",

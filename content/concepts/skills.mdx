@@ -24,6 +24,33 @@ A skill source can be any of:
 
 A source can contain one or many skills. Each top-level directory inside the source that contains a `SKILL.md` is one skill.
 
+## Registry search and install
+
+You can write `skills:` entries by hand, or use the registry commands to discover and add them:
+
+```bash
+gaal skill search frontend
+gaal skill install frontend-design
+```
+
+The default registry is `skills.sh`. Search is config-optional, so you can run it before creating a `gaal.yaml`.
+
+For the `skills.sh` registry, gaal discovers matches through the official CLI surface, `npx skills find <query>`. Make sure `npx` is available on `PATH`. No `VERCEL_OIDC_TOKEN` or skills.sh API auth is required for gaal's v1 registry workflow.
+
+Install resolves a registry reference, writes or updates the selected config file, and runs `gaal sync` by default. It defaults to global installation and writes `agents: ["*"]` explicitly:
+
+```yaml
+skills:
+  - source: anthropics/skills
+    registry: skills.sh
+    select:
+      - frontend-design
+    agents: ["*"]
+    global: true
+```
+
+`registry:` records where the entry came from. Sync still uses `source:` to fetch the skills. gaal does not run `npx skills add`; it uses registry discovery to write normal `skills:` config, then syncs that config.
+
 ## Targeting agents
 
 Every skill entry says which agents to install it for:
@@ -59,6 +86,10 @@ skills:
 | `true` | Per-user: `~/.claude/skills/<skill>`, `~/.cursor/skills/<skill>`, … |
 
 Use **project** for skills tied to one repo (CI helpers, codebase-specific reviewers). Use **global** for skills you want available everywhere (your personal git-helper, formatting preferences).
+
+<Note>
+Manual `skills:` entries default to `global: false` when the field is omitted. `gaal skill install` defaults to global installation and writes `global: true`.
+</Note>
 
 ## Selecting a subset
 
@@ -107,6 +138,7 @@ See [Agent integrations](/agents/overview) for the exact path used by each agent
 ## Related
 
 <CardGroup cols={2}>
+  <Card title="gaal skill" icon="terminal" href="/cli/skill" />
   <Card title="Configure skills" icon="gear" href="/configure/skills" />
   <Card title="Agent integrations" icon="robot" href="/agents/overview" />
   <Card title="Pruning" icon="scissors" href="/workflows/pruning" />
