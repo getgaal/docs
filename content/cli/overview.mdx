@@ -22,6 +22,7 @@ These work with every command:
 
 | Command | Purpose |
 |---------|---------|
+| [`gaal skill`](/cli/skill) | Search registry skills and add them to `gaal.yaml`. |
 | [`gaal sync`](/cli/sync) | Reconcile every resource in `gaal.yaml` against the filesystem. |
 | [`gaal status`](/cli/status) | Print the current state of every repo, skill, and MCP entry. |
 | [`gaal agents`](/cli/agents) | List registered coding agents and detection status. |
@@ -54,6 +55,9 @@ gaal --config /etc/gaal/team.yaml sync
 
 # Verbose JSON output
 gaal --verbose -o json status
+
+# Search the default skill registry
+gaal skill search frontend
 
 # Sync everything into a sandbox
 gaal --sandbox /tmp/gaal-test sync

@@ -25,7 +25,7 @@ repositories:
   # local-path: { type, url, version }
 
 skills:
-  # - { source, agents, global, target_subdir, select }
+  # - { source, registry, agents, global, target_subdir, select }
 
 content:
   # - { source, agents, global, root, paths }
@@ -74,8 +74,10 @@ repositories:
 
 skills:
   - source: anthropics/skills
+    registry: skills.sh
     agents: ["*"]
     select: [frontend-design, skill-creator]
+    global: true
 
   - source: ./company-skills
     agents: [claude-code, cursor]

@@ -6,6 +6,7 @@ description: "SKILL.md collections to install per agent."
 ```yaml
 skills:
   - source: <string>
+    registry: <string>      # optional
     agents: <[string] | ["*"]>
     global: <bool>          # optional, default false
     target_subdir: <string> # optional
@@ -40,6 +41,16 @@ Where the skills come from. Accepts:
 
 The source can contain one or many skills. Each top-level subdirectory containing a `SKILL.md` is one skill.
 
+### `registry`
+
+| Field | Type | Required |
+|-------|------|----------|
+| `registry` | string | no |
+
+Registry provenance for entries created by `gaal skill install`, usually `skills.sh`.
+
+`registry` does not change how `gaal sync` fetches skills. Sync remains source-based and uses `source:`. Registry-backed entries are still distinct from legacy entries that have the same source but no `registry:`.
+
 ### `agents`
 
 | Field | Type | Required |
@@ -49,6 +60,8 @@ The source can contain one or many skills. Each top-level subdirectory containin
 Either a list of registry names (`[claude-code, cursor, codex]`) or the wildcard `["*"]`.
 
 `["*"]` resolves at sync time to **agents currently detected on this machine**. Use `gaal sync --force` to expand it to every registered agent regardless of detection.
+
+For registry installs, omitted `agents` and `agents: ["*"]` are not treated as equivalent. `gaal skill install` writes `agents: ["*"]` explicitly when you accept the default.
 
 ### `global`
 
@@ -92,6 +105,12 @@ CLI tools this skill collection depends on. Checked for presence by `gaal doctor
 ```yaml
 skills:
   - source: anthropics/skills
+    registry: skills.sh
+    select: [frontend-design]
+    agents: ["*"]
+    global: true
+
+  - source: anthropics/skills
     agents: ["*"]
     global: false
 
@@ -120,10 +139,13 @@ skills:
 - Sources are fetched once per sync and reused across all targeted agents.
 - Skills already at the right version are reported `= unchanged`.
 - Skills no longer in the config are left alone unless you pass `--prune`.
+- If `select:` is empty or omitted, the entry covers every skill in the source.
+- Install identity is based on `source`, `registry`, normalized `agents`, `global`, and `target_subdir`.
 
 ## Related
 
 <CardGroup cols={2}>
+  <Card title="gaal skill" icon="terminal" href="/cli/skill" />
   <Card title="Concepts: Skills" icon="brain" href="/concepts/skills" />
   <Card title="Configure skills" icon="gear" href="/configure/skills" />
   <Card title="Agent integrations" icon="robot" href="/agents/overview" />

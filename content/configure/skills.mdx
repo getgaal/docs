@@ -5,6 +5,47 @@ description: "Cookbook for the skills: block of gaal.yaml."
 
 This page is a working reference for the `skills:` block. For the conceptual model, see [Concepts → Skills](/concepts/skills).
 
+## Add a skill from the registry
+
+Use `gaal skill search` to discover registry skills, then `gaal skill install` to add one to your config:
+
+```bash
+gaal skill search frontend
+gaal skill install frontend-design
+```
+
+By default, install uses the `skills.sh` registry, writes to the selected config file, installs globally, targets every detected agent with `agents: ["*"]`, and runs `gaal sync`.
+
+For the `skills.sh` registry, gaal uses the official CLI surface through `npx skills find` for discovery and lookup. Make sure `npx` is available on `PATH`. No `VERCEL_OIDC_TOKEN` or skills.sh API auth is required.
+
+```yaml
+schema: 1
+repositories: {}
+skills:
+  - source: anthropics/skills
+    registry: skills.sh
+    select:
+      - frontend-design
+    agents: ["*"]
+    global: true
+mcps: []
+```
+
+Use `--project` for a project-local entry, `--agents claude-code,codex` to target specific agents, or `--no-sync` to update YAML without syncing.
+
+gaal does not run `npx skills add` for the final installation. It writes normal `skills:` config and then syncs it, so `gaal.yaml` remains the source of truth.
+
+Accepted refs include:
+
+```text
+frontend-design
+skills.sh/frontend-design
+anthropics/skills:frontend-design
+skills.sh/anthropics/skills:frontend-design
+```
+
+In non-interactive shells, pass `--yes` before install mutates the config. If a loose ref is ambiguous, gaal prints the choices and exits non-zero; `--yes` does not auto-pick.
+
 ## Install everything from a GitHub repo to every detected agent
 
 ```yaml
@@ -115,10 +156,12 @@ This applies only to entries with `agents: ["*"]`. Explicit agent lists are hono
 - New skills are added.
 - Skills no longer in the config are left in place unless you pass `--prune`.
 - Each skill source is fetched once per sync and reused across all agents that target it.
+- For registry-installed entries, `registry:` is provenance only. Sync continues to fetch the `source:`.
 
 ## Related
 
 <CardGroup cols={2}>
+  <Card title="gaal skill" icon="terminal" href="/cli/skill" />
   <Card title="Concepts: skills" icon="brain" href="/concepts/skills" />
   <Card title="Agent integrations" icon="robot" href="/agents/overview" />
   <Card title="Pruning" icon="scissors" href="/workflows/pruning" />

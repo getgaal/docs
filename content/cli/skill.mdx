@@ -1,0 +1,141 @@
+---
+title: "gaal skill"
+description: "Search registry skills and add them to gaal.yaml."
+---
+
+```bash
+gaal skill <command> [flags]
+```
+
+`gaal skill` is the registry entry point. Use it to find skills in a registry, add selected skills to a `gaal.yaml`, and optionally run the normal sync immediately.
+
+The default registry is `skills.sh`.
+
+<Note>
+For the `skills.sh` registry, gaal uses the official skills.sh CLI surface through `npx skills find`. Make sure `npx` is available on `PATH`. No `VERCEL_OIDC_TOKEN` or skills.sh API auth is required for gaal's v1 registry workflow.
+</Note>
+
+## Commands
+
+| Command | Purpose |
+|---------|---------|
+| `gaal skill search <query>` | Search a registry for matching skills. |
+| `gaal skill install <ref>` | Add a registry skill to `gaal.yaml` and sync it. |
+
+## Search
+
+```bash
+gaal skill search <query> [flags]
+```
+
+Search does not require a `gaal.yaml`. For the `skills.sh` registry, gaal discovers matches through `npx skills find <query>` and prints the results in the selected output format.
+
+### Search flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--registry <name>` | `skills.sh` | Registry to search. |
+| `--limit <n>` | `10` | Maximum number of results. Must be between `1` and `100`. |
+
+Plus all [global flags](/cli/overview#global-flags). Use `-o table` or `-o text` for a compact table, or `-o json` for structured fields.
+
+### Search examples
+
+```bash
+# Search the default registry
+gaal skill search frontend
+
+# Search more results
+gaal skill search review --limit 25
+
+# Script against structured output
+gaal skill search frontend -o json
+```
+
+## Install
+
+```bash
+gaal skill install <ref> [flags]
+```
+
+Install resolves a registry reference through the same discovery path, writes or updates the selected `gaal.yaml`, and runs `gaal sync` by default.
+
+gaal does not delegate the final install side effect to `npx skills add`. The source of truth remains `gaal.yaml`; registry lookup only helps gaal choose the normal `skills:` entry to write.
+
+When the config file does not exist, install creates a compact minimal file:
+
+```yaml gaal.yaml
+schema: 1
+repositories: {}
+skills:
+  - source: anthropics/skills
+    registry: skills.sh
+    select:
+      - frontend-design
+    agents: ["*"]
+    global: true
+mcps: []
+```
+
+### Accepted references
+
+All of these refer to the same skill:
+
+```text
+frontend-design
+skills.sh/frontend-design
+anthropics/skills:frontend-design
+skills.sh/anthropics/skills:frontend-design
+```
+
+Loose names, such as `frontend-design`, can match more than one registry result. In an interactive terminal, gaal shows a picker. In a non-interactive shell, gaal prints the choices and exits non-zero. `--yes` skips confirmation, but it does not choose among ambiguous results.
+
+### Install flags
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--registry <name>` | `skills.sh` | Registry to resolve refs against. |
+| `--agents <a,b>` | `*` | Agents to target. When omitted, install writes `agents: ["*"]` explicitly. |
+| `--global` | on | Install globally across projects. Mutually exclusive with `--project`. |
+| `--project` | off | Write `global: false` for project-local installation. Mutually exclusive with `--global`. |
+| `--no-sync` | off | Update YAML only. Do not run sync after writing. |
+| `--yes` | off | Skip the final confirmation. Required before mutation in non-interactive shells. |
+
+Plus all [global flags](/cli/overview#global-flags), including `--config`.
+
+### Install behavior
+
+- Install defaults to global scope and writes `global: true`.
+- `--project` writes `global: false`.
+- `--config` selects which config file to create or update.
+- The registry is stored as `registry:` on the skill entry for provenance.
+- `gaal sync` remains source-based. It fetches the `source:` value; `registry:` records where the entry came from.
+- For the `skills.sh` registry, discovery uses `npx skills find`; final installation still happens through gaal sync.
+- gaal does not require `VERCEL_OIDC_TOKEN` or skills.sh API auth for this workflow.
+- Registry-backed entries do not collapse with legacy entries that lack `registry:`.
+- Omitted `agents` and `agents: ["*"]` are distinct for registry installs. The install command writes `agents: ["*"]` when you use the default.
+- If an existing matching entry has no `select:`, the requested skill is already covered because empty or omitted `select:` means install every skill in the source.
+
+### Install examples
+
+```bash
+# Install globally for every detected agent, then sync
+gaal skill install frontend-design
+
+# Install for Claude Code and Codex only
+gaal skill install frontend-design --agents claude-code,codex
+
+# Update the project config without syncing yet
+gaal skill install anthropics/skills:frontend-design --project --no-sync
+
+# Non-interactive install into a specific config
+gaal --config ~/.config/gaal/config.yaml skill install skills.sh/frontend-design --yes
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Configure skills" icon="gear" href="/configure/skills" />
+  <Card title="Schema: skills" icon="file-code" href="/schema/skills" />
+  <Card title="gaal sync" icon="rotate" href="/cli/sync" />
+</CardGroup>
