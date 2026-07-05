@@ -12,6 +12,12 @@
     "default": "dark",
     "strict": false
   },
+  "integrations": {
+    "plausible": {
+      "domain": "docs.getgaal.com",
+      "server": "usage.getgaal.com"
+    }
+  },
   "background": {
     "color": {
       "dark": "#000000",
